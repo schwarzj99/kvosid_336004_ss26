@@ -1,0 +1,6 @@
+parameters:
+  VDD: [1.5]
+tests:
+  filter_cl_ideal:
+    engine: ngspice
+    ac_signals: [v(vout1), v(vout)]

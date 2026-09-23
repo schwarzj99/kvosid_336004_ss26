@@ -10,6 +10,7 @@
 #           22.09.2026: Cleanup, suppress warnings from control.matlab
 #
 
+import argparse
 import warnings
 
 # python-control >= 0.10: matlab-mode bode()/pzmap() always request the legacy
@@ -22,6 +23,15 @@ from math import pi
 from control.matlab import *
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
+from pathlib import Path
+
+# Passive values handed over to the sizing script of the filter macro,
+# written with the parameter file helpers that live next to it
+SIZING_DIR = Path(__file__).resolve().parents[1] / 'macros/filter_cmos5l/scripts/sizing'
+PASSIVES_FILE = SIZING_DIR / 'filterPassives.spice'
+sys.path.insert(0, str(SIZING_DIR))
+from spice_params import write_spice_params
 
 
 def plot_step_response(b, a, t_start=0, t_stop=0.01e-3, t_step=0.01e-6):
@@ -58,12 +68,13 @@ def calc_rc_mfb_biquad(a0=1.0, wp=1e7, qp=1.0, k_c=50, c2=0.1e-12, use_a=True):
     k_r2 = a0
     d = 4 * qp ** 2 * (1 + k_r2)
     if k_c < d:
-        raise ValueError("No real solutions k_C < D! Increase k_C!")
+        k_c = d + 1e-3
+        #raise ValueError("No real solutions k_C < D! Increase k_C!")
 
     r1_a = (1 + np.sqrt(1 - d / k_c)) / (2 * k_r2 * qp * wp * c2)
     r1_b = (1 - np.sqrt(1 - d / k_c)) / (2 * k_r2 * qp * wp * c2)
-    print("R_A = %0.2f" % (r1_a / 1e6), "MOhm")
-    print("R_B = %0.2f" % (r1_b / 1e6), "MOhm")
+    print("R_A = %0.2f" % (r1_a / 1e3), "kOhm")
+    print("R_B = %0.2f" % (r1_b / 1e3), "kOhm")
     k_r3_a = 1 / (r1_a ** 2 * c2 ** 2 * k_c * k_r2 * wp ** 2)
     k_r3_b = 1 / (r1_b ** 2 * c2 ** 2 * k_c * k_r2 * wp ** 2)
     print("k_R3_A = %0.2f" % k_r3_a)
@@ -121,15 +132,16 @@ def adc_noise_spec(nbits=8, vref=0.9, vmax_pp=0.9, noise_margin_db=10, fmin=10e3
     return {'vno_density': vonoise_density, 'vnq_int': vqnoise, 'vno_int': vonoise, 'vlsb': vlsb}
 
 
-def main():
+def main(plots=False):
+    """ plots: show pole-zero maps, Bode plots and step response """
     # Define Filter Specs
-    area_max_umsq = (100e-6 * 200e-6) / 1e-12   # max available chip area
+    area_max_umsq = (200e-6 * 200e-6) / 1e-12   # max available chip area
 
     osr = 5                                    # oversampling ratio
-    f_pass = 100e3                               # -3dB corner frequency
+    f_pass = 1e6                               # -3dB corner frequency
     f_s = f_pass*2*osr                              # sampling frequency of the ADC
-    f_stop = f_s / 2                              # start of stop band for filter approx.
-    a_pass_db = 6.02                             # Pass-band gain
+    f_stop = 9e6                              # start of stop band for filter approx.
+    a_pass_db = 20                            # Pass-band gain
     a_pass = 10 ** (a_pass_db / 20.0)
     a_stop_db = 50                               # Stop-band attenuation, only used by iirfilter() for Chebychev approx.
     filter_approx = 'butter'                    # Select Butterworth low-pass approximation
@@ -149,16 +161,17 @@ def main():
 
     # Plot PZ, Bode and Step response
     sys_tf = TransferFunction(b, a)
-    plt.figure(1)
-    pzmap(sys_tf)
-    plt.title('Pole-Zero Map of Prototype')
-    plt.show(block=False)
-    plt.figure(2)
-    bode(sys_tf, wvec, Hz=True)
-    # plt.title('Bode Plot of Prototype')
-    plt.show(block=False)
+    if plots:
+        plt.figure(1)
+        pzmap(sys_tf)
+        plt.title('Pole-Zero Map of Prototype')
+        plt.show(block=False)
+        plt.figure(2)
+        bode(sys_tf, wvec, Hz=True)
+        # plt.title('Bode Plot of Prototype')
+        plt.show(block=False)
 
-    plot_step_response(b, a, t_start=0, t_stop=5/f_pass, t_step=0.01/f_pass)
+        plot_step_response(b, a, t_start=0, t_stop=5/f_pass, t_step=0.01/f_pass)
 
     # Convert to second order sections
     biquads = scs.tf2sos(b, a, analog=True)
@@ -175,14 +188,15 @@ def main():
 
     # Note: static gain of first stage is moved to second stage!
     sys_biquad1 = TransferFunction([0, 0, a_pass], a_coeff_proto_1)
-    plt.figure(4)
-    pzmap(sys_biquad1)
-    plt.title('Pole-Zero Map of 1. Biquad')
-    plt.show(block=False)
-    plt.figure(5)
-    bode(sys_biquad1, wvec, Hz=True)
-    # plt.title('Bode Plot of 1. Biquad')
-    plt.show(block=False)
+    if plots:
+        plt.figure(4)
+        pzmap(sys_biquad1)
+        plt.title('Pole-Zero Map of 1. Biquad')
+        plt.show(block=False)
+        plt.figure(5)
+        bode(sys_biquad1, wvec, Hz=True)
+        # plt.title('Bode Plot of 1. Biquad')
+        plt.show(block=False)
 
     # Get pole frequency and pole quality factor
     wp = 1 / np.sqrt(a_coeff_proto_1[0])
@@ -192,10 +206,11 @@ def main():
     print("fp = %0.2f" % (2 * pi * wp / 1e3), "kHz")
     print("Qp = %0.2f" % qp)
 
-    C1, C2, R1, R2, R3 = calc_rc_mfb_biquad(a_pass, wp, qp, k_c=20, c2=1e-12, use_a=True)
-    print("R1 = %.3f" % (R1 / 1e6), "MOhm")
-    print("R2 = %.3f" % (R2 / 1e6), "MOhm")
-    print("R3 = %.3f" % (R3 / 1e6), "MOhm")
+    # Calculate the Resistors and Capacitors for given biquad form
+    C1, C2, R1, R2, R3 = calc_rc_mfb_biquad(a_pass, wp, qp, k_c=50, c2=0.1e-12, use_a=True)
+    print("R1 = %.3f" % (R1 / 1e3), "kOhm")
+    print("R2 = %.3f" % (R2 / 1e3), "kOhm")
+    print("R3 = %.3f" % (R3 / 1e3), "kOhm")
     print("C1 = %.2f" % (C1 / 1e-12), "pF")
     print("C2 = %.2f" % (C2 / 1e-12), "pF")
 
@@ -214,36 +229,43 @@ def main():
     wp2 = 1 / a_coeff_proto_2[1]
 
     sys_biquad2 = TransferFunction(b_coeff_proto_2, a_coeff_proto_2)
-    plt.figure(6)
-    pzmap(sys_biquad2)
-    plt.title('Pole-Zero Map of Passive RC Section')
-    plt.show(block=False)
-    plt.figure(7)
-    bode(sys_biquad2, wvec, Hz=True)
-    #plt.title('Bode Plot of Passive RC Section')
-    plt.show(block=False)
+    if plots:
+        plt.figure(6)
+        pzmap(sys_biquad2)
+        plt.title('Pole-Zero Map of Passive RC Section')
+        plt.show(block=False)
+        plt.figure(7)
+        bode(sys_biquad2, wvec, Hz=True)
+        #plt.title('Bode Plot of Passive RC Section')
+        plt.show(block=False)
 
     # Calc RC of passive RC low-pass
     C3 = 2 * C2
     R4 = 1 / (wp2 * C3)
     R4_MOhm = R4 / 1e6
+    R4_kOhm = R4 * 1e-3
     C3_pF = C3 / 1e-12
-    print("R4 = %.3f" % R4_MOhm, "MOhm")
+    print("R4 = %.3f" % R4_kOhm, "kOhm")
     print("C3 = %.2f" % C3_pF, "pF")
+
+    # Export passives for the sizing script
+    passives = {'R1': R1, 'R2': R2, 'R3': R3, 'C1': C1, 'C2': C2, 'R4': R4, 'C3': C3}
+    write_spice_params(passives, PASSIVES_FILE)
 
     # Evaluate Transfer Function
     s = TransferFunction.s
     h1_eval = (R2 / R1) * 1 / (1 + C2 * (R2 + R3 + R2 * R3 / R1) * s + C1 * C2 * R2 * R3 * s ** 2)
     h2_eval = 1 / (1 + s * R4 * C3)
     h_eval = series(h1_eval, h2_eval)
-    plt.figure(8)
-    pzmap(h_eval)
-    plt.title('Pole-Zero Map of Biquad Cascade (based on RC components)')
-    plt.show(block=False)
-    plt.figure(9)
-    bode(h_eval, wvec, Hz=True)
-    # plt.title('Bode Plot of Biquad Cascade (based on RC components')
-    plt.show(block=False)
+    if plots:
+        plt.figure(8)
+        pzmap(h_eval)
+        plt.title('Pole-Zero Map of Biquad Cascade (based on RC components)')
+        plt.show(block=False)
+        plt.figure(9)
+        bode(h_eval, wvec, Hz=True)
+        # plt.title('Bode Plot of Biquad Cascade (based on RC components')
+        plt.show(block=False)
 
     # Estimate Chip Area for SKY130
     CL = 0
@@ -318,5 +340,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    input("Press Enter to exit...")
+    parser = argparse.ArgumentParser(description='Design the MFB low-pass filter and export its passives.')
+    parser.add_argument('-plots', '--plots', action='store_true',
+                        help='show pole-zero maps, Bode plots and step response')
+    args = parser.parse_args()
+
+    main(plots=args.plots)
+    if args.plots:
+        # Keep the non-blocking plot windows open
+        input("Press Enter to exit...")
