@@ -403,7 +403,7 @@ clean: ## Delete all generated files and folders (final, netlists, render, DRC/L
 # ================================================================================================
 
 # ================================================================================================
-# VACASK targets. The spike's benches run in VACASK, netlisted by xschem in its
+# VACASK targets. The benches run in VACASK, netlisted by xschem in its
 # spectre format, with the device sizes coming from the gm/Id script through
 # /lna_inv_sizes.inc so nothing is copied by hand.
 GMID_LUT_DIR ?= /foss/examples/analog-course/gmid
@@ -438,7 +438,15 @@ netlist-vacask: ## Netlist VTB as VACASK into $(SIM_DIR), audit it (usage: make 
 # benches' bare `include "sg13cmos5l_vacask_common.lib"` only resolves when the
 # rc sits beside the netlist and vacask is started there. run-vacask is the one
 # place that arranges both, for the Makefile and for the xschem launcher alike.
-VACASK_RC := $(PDK_ROOT)/$(PDK)/libs.tech/vacask/.vacaskrc.toml
+#
+# This macro is SG13CMOS5L only, and the PDK's own rc file carries $(PDK_ROOT)
+# and $(PDK) placeholders that VACASK expands at RUN time, so the variable has
+# to be right in the environment of the vacask process. The testbench xschemrc
+# pins it for the GUI, since xschem passes its environment to the vacask it
+# spawns, but a plain make in a shell where sak-pdk was never run would leave
+# ihp-sg13g2 and resolve the models against the wrong tree.
+VACASK_PDK ?= ihp-sg13cmos5l
+VACASK_RC  := $(PDK_ROOT)/$(VACASK_PDK)/libs.tech/vacask/.vacaskrc.toml
 
 run-vacask: ## Run an already netlisted VTB in VACASK (usage: make run-vacask [VTB=<bench>])
 	@test -s $(SIM_DIR)/$(VTB).spectre || { \
@@ -446,14 +454,17 @@ run-vacask: ## Run an already netlisted VTB in VACASK (usage: make run-vacask [V
 		echo "or netlist from xschem with netlist_type spectre"; exit 1; }
 	@test -f $(VACASK_RC) || { \
 		echo "$(VACASK_RC) not found."; \
-		echo "PDK is \"$(PDK)\"; the VACASK collateral ships with ihp-sg13cmos5l."; \
-		echo "Run 'sak-pdk ihp-sg13cmos5l' in this shell and retry."; exit 1; }
+		echo "This macro needs the VACASK collateral of $(VACASK_PDK)."; \
+		echo "Check PDK_ROOT, or override with VACASK_PDK=<pdk>."; exit 1; }
+	@test "$(PDK)" = "$(VACASK_PDK)" || \
+		echo "note: PDK is \"$(PDK)\", running vacask against $(VACASK_PDK)"
 	@# VACASK reads a config from the TOPLEVEL NETLIST directory, whatever the
 	@# current directory is, so the include path is set up there once
 	python3 $(SCRIPTS_DIR)/vacask_rc.py --pdk-rc $(VACASK_RC) --out $(SIM_DIR) \
 		--add $(abspath $(XSCHEM_SCH_DIR))
-	cd $(SIM_DIR) && vacask $(VTB).spectre 2>&1 | tee $(VTB).log
-	@# vacask exits 0 when an analysis aborts, so the transcript is the verdict
+	@# -sp skips the benches' postprocess, which opens plot windows. make measure evaluates in batch.
+	cd $(SIM_DIR) && PDK=$(VACASK_PDK) vacask -sp $(VTB).spectre 2>&1 | tee $(VTB).log
+	@# tee hides vacask's exit status, so the transcript is the verdict
 	@! grep -qiE 'aborted|failed|error' $(SIM_DIR)/$(VTB).log || { echo "ERROR: see $(SIM_DIR)/$(VTB).log"; exit 1; }
 .PHONY: run-vacask
 
@@ -462,25 +473,32 @@ sim-vacask: ## Netlist and run VTB in VACASK (usage: make sim-vacask [VTB=<bench
 	$(MAKE) run-vacask VTB=$(VTB)
 .PHONY: sim-vacask
 
-measure: ## Read the raws of every bench and write doc/$(TOP)_feasibility.md
-	python3 $(SCRIPTS_DIR)/lna_measure.py --macro . --write
+measure: ## Read the raws of both benches and write doc/$(TOP)_feasibility.md
+	python3 $(SCRIPTS_DIR)/lna_inv_post.py --write
 .PHONY: measure
 
-sim-all: sizing ## Size, run the small-signal, HB and chain benches, score the block
+# The blocker bench runs hbnoise, which needs VACASK from hpretl/iic-osic-tools:2026.09 or later.
+sim-all: sizing ## Size, run the small-signal, HB and blocker benches, write the report
 	$(MAKE) sim-vacask VTB=lna_inv_tb_sp
 	$(MAKE) sim-vacask VTB=lna_inv_tb_hb
-	$(MAKE) sim-vacask VTB=lna_inv_tb_chain
+	$(MAKE) sim-vacask VTB=lna_inv_tb_blocker
 	$(MAKE) measure
 .PHONY: sim-all
 
-sweep: ## Re-size at several currents, coil Qs and gm/Id, measure each in VACASK, write doc/lna_inv_sweep.md
-	$(MAKE) netlist-vacask
-	python3 $(SCRIPTS_DIR)/lna_sweep.py --macro . --write
+hbcheck: ## Check the blocker bench's hbac and hbnoise against ac, noise and transient runs, write doc/lna_inv_hbcheck.md
+	$(MAKE) sim-vacask VTB=lna_inv_tb_blocker
+	PDK=$(VACASK_PDK) python3 $(SCRIPTS_DIR)/lna_inv_hbcheck.py --write
+.PHONY: hbcheck
+
+# The sweep runs vacask itself, so the PDK is pinned here the same way run-vacask pins it.
+sweep: ## Re-size at several currents and loads, measure each in VACASK, write doc/lna_inv_sweep.md
+	$(MAKE) netlist-vacask VTB=lna_inv_tb_sp
+	PDK=$(VACASK_PDK) python3 $(SCRIPTS_DIR)/lna_inv_sweep.py --write
 .PHONY: sweep
 
 robust: ## The nominal design with one thing moved at a time (part tolerance, pad, width, feedback R, load node), write doc/lna_inv_robust.md
-	$(MAKE) netlist-vacask
-	python3 $(SCRIPTS_DIR)/lna_sweep.py --macro . --points robust --write
+	$(MAKE) netlist-vacask VTB=lna_inv_tb_sp
+	PDK=$(VACASK_PDK) python3 $(SCRIPTS_DIR)/lna_inv_sweep.py --points robust --write
 .PHONY: robust
 
 # CACE corner characterization, ngspice. The sizes reach the template through

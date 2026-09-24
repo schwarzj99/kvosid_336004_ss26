@@ -230,7 +230,8 @@ let f_max = 100G
 let f_stop = 5Meg
 let tper_sig = 1/f_sig
 let tfr_sig = tper_sig/2
-let Adc = 10
+* R2/R1 = 1.3Meg/650k, so beta = R1/(R1+R2) = 1/3 at dc
+let Adc = 2
 let beta = 1/(1+Adc)
 let v_step_o = 0.9
 let v_step_i = v_step_o/Adc
@@ -274,6 +275,7 @@ option numdgt=3
 	
 	meas ac fug find frequency when L_dB=0
 	meas ac pm find L_arg when frequency=fug
+	meas ac L_im_zero find L_im when L_re=0
 	
 	let pm = 180-abs(pm)
 
