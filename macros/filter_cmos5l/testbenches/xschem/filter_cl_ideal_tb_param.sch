@@ -315,12 +315,12 @@ device=resistor
 m=1}
 C {devices/capa.sym} 740 -570 0 0 {name=C1
 m=1
-value=\{C1\}
+value=\{C1/2\}
 footprint=1206
 device="ceramic capacitor"}
 C {devices/capa.sym} 1540 -570 0 0 {name=C3
 m=1
-value=\{C3\}
+value=\{C3/2\}
 footprint=1206
 device="ceramic capacitor"}
 C {devices/res.sym} 660 -520 3 0 {name=R11
@@ -349,7 +349,7 @@ footprint=1206
 device=resistor
 m=1}
 C {devices/res.sym} 1470 -530 3 0 {name=R41
-value=\{R3\}
+value=\{R4\}
 footprint=1206
 device=resistor
 m=1}
@@ -397,5 +397,5 @@ C {devices/lab_wire.sym} 590 -250 1 0 {name=l31 sig_type=std_logic lab=vcmi}
 C {devices/launcher.sym} 130 -790 0 0 {name=h2
 descr="Annotate OP"
 tclcommand="set show_hidden_texts 1; xschem annotate_op"}
-C {ota_fd_2pole.sym} 970 -670 0 0 {name=xota1 GM=8.3m RO=2.39k CO=6.7p RP=0 CP=0.1p VCMO=0.75 I0=100u}
+C {ota_fd_2pole.sym} 970 -670 0 0 {name=xota1 GM=2.532m RO=434.488k CO=0.0366p RP=0 CP=0.01f VCMO=0.75 I0=150u}
 C {devices/lab_wire.sym} 970 -570 0 0 {name=l25 sig_type=std_logic lab=vcmi}

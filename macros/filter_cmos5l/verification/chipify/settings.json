@@ -36,5 +36,5 @@
   "in_dir": "datasheets",
   "out_dir": "out",
   "work_dir": "work",
-  "tb_dir": "tb"
+  "tb_dir": "/foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/"
 }

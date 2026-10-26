@@ -6,6 +6,7 @@ S {}
 F {}
 E {}
 P 4 1 350 -530 {}
+P 4 1 1490 -520 {}
 T {25u} 830 -920 0 0 0.4 0.4 {}
 T {200u} 1140 -920 0 0 0.4 0.4 {}
 T {Diff-Pair} 1110 -140 0 0 0.4 0.4 {}
@@ -536,7 +537,124 @@ C {devices/lab_pin.sym} 2090 -630 0 1 {name=p12 sig_type=std_logic lab=vbncm}
 C {devices/lab_pin.sym} 850 -380 0 0 {name=p8 sig_type=std_logic lab=vrref_sw}
 C {rstring_cm.sym} 1280 -410 2 0 {name=xr1}
 C {rstring_cm.sym} 1560 -650 0 0 {name=xr2}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 210 -490 0 0 {name=M1
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 210 -490 0 0 {name=M1
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_nmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 450 -490 0 0 {name=M2
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_nmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 210 -600 0 0 {name=M3
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 450 -600 0 0 {name=M4
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 640 -790 0 0 {name=M5
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 870 -790 0 1 {name=M6
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1140 -790 0 0 {name=M7
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1580 -750 0 1 {name=M8
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1780 -750 0 0 {name=M9
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 2070 -790 0 0 {name=M10
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_pmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 830 -290 0 0 {name=M11
+l=0.13u
+w=0.15u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_nmos
+spiceprefix=X
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1090 -290 0 1 {name=M12
+l=0.13u
+w=6u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_nmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1230 -290 0 0 {name=M13
+l=0.13u
+w=6u
+ng=1
+m=1
+mm_ok=1
+model=sg13_lv_nmos
+spiceprefix=X
+}
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1540 -450 0 0 {name=M14
 l=0.13u
 w=0.15u
 ng=1
@@ -545,7 +663,7 @@ mm_ok=1
 model=sg13_lv_nmos
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 450 -490 0 0 {name=M2
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1780 -450 0 0 {name=M15
 l=0.13u
 w=0.15u
 ng=1
@@ -554,79 +672,7 @@ mm_ok=1
 model=sg13_lv_nmos
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 210 -600 0 0 {name=M3
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 450 -600 0 0 {name=M4
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 640 -790 0 0 {name=M5
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 870 -790 0 1 {name=M6
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 1140 -790 0 0 {name=M7
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 1580 -750 0 1 {name=M8
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 1780 -750 0 0 {name=M9
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 2070 -790 0 0 {name=M10
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_pmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 830 -290 0 0 {name=M11
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1970 -450 0 1 {name=M16
 l=0.13u
 w=0.15u
 ng=1
@@ -635,7 +681,7 @@ mm_ok=1
 model=sg13_lv_nmos
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 1090 -290 0 1 {name=M12
+C {sg13cmos5l_pr/sg13_lv_nmos.sym} 2070 -450 0 0 {name=M17
 l=0.13u
 w=0.15u
 ng=1
@@ -644,81 +690,36 @@ mm_ok=1
 model=sg13_lv_nmos
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 1230 -290 0 0 {name=M13
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1050 -580 0 0 {name=M18
 l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_nmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 1540 -450 0 0 {name=M14
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_nmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 1780 -450 0 0 {name=M15
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_nmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 1970 -450 0 1 {name=M16
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_nmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_nmos.sym} 2070 -450 0 0 {name=M17
-l=0.13u
-w=0.15u
-ng=1
-m=1
-mm_ok=1
-model=sg13_lv_nmos
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 1050 -580 0 0 {name=M18
-l=0.13u
-w=0.15u
-ng=1
+w=71u
+ng=10
 m=1
 mm_ok=1
 model=sg13_lv_pmos
 spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/sg13_lv_pmos.sym} 1270 -580 0 1 {name=M19
+spice_ignore=true}
+C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1270 -580 0 1 {name=M19
 l=0.13u
-w=0.15u
-ng=1
+w=71u
+ng=10
 m=1
 mm_ok=1
 model=sg13_lv_pmos
 spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/rhigh.sym} 850 -470 0 0 {name=R1
+spice_ignore=true}
+C {sg13cmos5l_pr/rhigh.sym} 850 -470 0 0 {name=R1
 w=0.5e-6
 l=0.96e-6
 model=rhigh
-body=vss
+body=VSS
 spiceprefix=X
 b=0
 m=1
 mm_ok=1
 value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*( @w - 0.04e-6 ) + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1110 -350 1 0 {name=C1
+C {sg13cmos5l_pr/cap_cmomf.sym} 1300 -810 2 0 {name=C3
 model=cap_cmomf
 w=5e-6
 l=5e-6
@@ -729,7 +730,7 @@ m=1
 mm_ok=1
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1210 -350 1 0 {name=C2
+C {sg13cmos5l_pr/cap_cmomf.sym} 1620 -660 3 0 {name=C4
 model=cap_cmomf
 w=5e-6
 l=5e-6
@@ -740,7 +741,7 @@ m=1
 mm_ok=1
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1300 -810 2 0 {name=C3
+C {sg13cmos5l_pr/cap_cmomf.sym} 1740 -660 3 0 {name=C5
 model=cap_cmomf
 w=5e-6
 l=5e-6
@@ -751,47 +752,23 @@ m=1
 mm_ok=1
 spiceprefix=X
 }
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1620 -660 3 0 {name=C4
-model=cap_cmomf
-w=5e-6
-l=5e-6
-mmin=1
-mmax=4
-subblock=0
+C {capa.sym} 1490 -520 1 0 {name=C6
 m=1
-mm_ok=1
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1740 -660 3 0 {name=C5
-model=cap_cmomf
-w=5e-6
-l=5e-6
-mmin=1
-mmax=4
-subblock=0
+value=1.221p
+footprint=1206
+device="ceramic capacitor"}
+C {capa.sym} 1110 -350 1 0 {name=C1
 m=1
-mm_ok=1
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1490 -520 3 0 {name=C6
-model=cap_cmomf
-w=5e-6
-l=5e-6
-mmin=1
-mmax=4
-subblock=0
+value=1p
+footprint=1206
+device="ceramic capacitor"}
+C {capa.sym} 1210 -350 1 0 {name=C2
 m=1
-mm_ok=1
-spiceprefix=X
-}
-C {/foss/pdks/ihp-sg13cmos5l/libs.tech/xschem/sg13cmos5l_pr/cap_cmomf.sym} 1730 -520 1 0 {name=C7
-model=cap_cmomf
-w=5e-6
-l=5e-6
-mmin=1
-mmax=4
-subblock=0
+value=1p
+footprint=1206
+device="ceramic capacitor"}
+C {capa.sym} 1730 -520 1 0 {name=C7
 m=1
-mm_ok=1
-spiceprefix=X
-}
+value=1.221p
+footprint=1206
+device="ceramic capacitor"}

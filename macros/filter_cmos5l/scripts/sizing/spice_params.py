@@ -38,11 +38,20 @@ def parse_spice_value(s):
     return float(m.group(1)) * SPICE_SCALE.get(m.group(2), 1.0)
 
 
-def write_spice_params(params, path):
-    """ Write a dict {name: value} as '.param NAME=VALUE' lines, keeping the dict order """
+def micron_value(x, decimals=4):
+    """ Format a length given in um as a SPICE number in m, e.g. 0.5 -> '0.5e-6' """
+    return ('%.*f' % (decimals, x)).rstrip('0').rstrip('.') + 'e-6'
+
+
+def write_spice_params(params, path, microns=False):
+    """ Write a dict {name: value} as '.param NAME=VALUE' lines, keeping the dict order.
+        microns: values are in um and written as e.g. '0.5e-6' (device sizes),
+                 otherwise SI values with a scale suffix, e.g. '10.7144k' (passives)
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    lines = ['.param %s=%s' % (name, spice_value(value)) for name, value in params.items()]
+    fmt = micron_value if microns else spice_value
+    lines = ['.param %s=%s' % (name, fmt(value)) for name, value in params.items()]
     path.write_text('\n'.join(lines) + '\n')
     print("Wrote %d parameters to %s" % (len(lines), path))
 

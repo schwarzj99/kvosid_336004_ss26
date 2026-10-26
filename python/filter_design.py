@@ -96,18 +96,18 @@ def calc_rc_mfb_biquad(a0=1.0, wp=1e7, qp=1.0, k_c=50, c2=0.1e-12, use_a=True):
     return [c1, c2, r1, r2, r3]
 
 
-def estimate_rc_chip_area_sky130(r_tot=1e6, c_tot=10e-12):
-    """Estimate the RC Chip Area for SKY130 PDK using M3 MiM Caps and High Rsheet Poly Res.
+def estimate_rc_chip_area_ihp_cmos5l(r_tot=1e6, c_tot=10e-12):
+    """Estimate the RC Chip Area for IHP-SG13CMOS5L PDK using M1-M4 MoMf Caps and High Rsheet Poly Res.
 
         return: dictionary with R and C areas in m^2 and um^2
     """
 
     # Calculate occupied chip area
-    w_rpoly = 0.35e-6
-    r_sheet = 2000
-    c_prime = 2e-15 / 1e-12
-    l_rtot = r_tot * w_rpoly / r_sheet
-    a_rtot = l_rtot * w_rpoly
+    w_rhigh = 0.5e-6
+    r_sheet = 1645
+    c_prime = 1.287e-15 / 1e-12
+    l_rtot = r_tot * w_rhigh / r_sheet
+    a_rtot = l_rtot * w_rhigh
     a_rtot_umsq = a_rtot / 1e-12
     a_ctot = c_tot / c_prime
     a_ctot_umsq = a_ctot / 1e-12
@@ -207,7 +207,7 @@ def main(plots=False):
     print("Qp = %0.2f" % qp)
 
     # Calculate the Resistors and Capacitors for given biquad form
-    C1, C2, R1, R2, R3 = calc_rc_mfb_biquad(a_pass, wp, qp, k_c=50, c2=0.1e-12, use_a=True)
+    C1, C2, R1, R2, R3 = calc_rc_mfb_biquad(a_pass, wp, qp, k_c=50, c2=0.5e-12, use_a=False)
     print("R1 = %.3f" % (R1 / 1e3), "kOhm")
     print("R2 = %.3f" % (R2 / 1e3), "kOhm")
     print("R3 = %.3f" % (R3 / 1e3), "kOhm")
@@ -275,7 +275,7 @@ def main(plots=False):
     r_tot = 2 * np.sum(r_vec)
     c_tot = 2 * np.sum(c_se_vec) + np.sum(c_diff_vec) / 2
 
-    res = estimate_rc_chip_area_sky130(r_tot, c_tot)
+    res = estimate_rc_chip_area_ihp_cmos5l(r_tot, c_tot)
     area_rtot_umsq = res['umsq']['R']
     area_ctot_umsq = res['umsq']['C']
 
@@ -310,7 +310,7 @@ def main(plots=False):
     rcm_tot = 4*rcm
     ccm_tot = 4*ccm
     cm_tot = 2*cm
-    area_rc_cm = estimate_rc_chip_area_sky130(rcm_tot, ccm_tot+cm_tot)
+    area_rc_cm = estimate_rc_chip_area_ihp_cmos5l(rcm_tot, ccm_tot+cm_tot)
 
     area_amp_tot = area_bias + area_cmfb + area_stage1 + area_stage2 + area_rc_cm['msq']['R'] + area_rc_cm['msq']['C']
     area_amp_tot_umsq = area_amp_tot / 1e-12

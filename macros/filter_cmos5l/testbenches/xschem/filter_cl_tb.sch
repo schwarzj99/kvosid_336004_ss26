@@ -196,7 +196,7 @@ let f_stop = 500k
 
 let Adc = 2
 let err_gain_spec = 0.004
-let v_step_o = 0.9
+let v_step_o = 0.75
 let v_step_i = v_step_o/Adc
 
 let t_rf = 0.1u
@@ -385,11 +385,11 @@ C {devices/vsource.sym} 1270 -610 3 0 {name=VIOP value=0
 C {devices/vsource.sym} 1270 -530 3 1 {name=VION value=0
 }
 C {amp.sym} 900 -750 0 0 {name=xamp1}
-C {devices/vsource.sym} 440 -180 0 0 {name=V1 value=1.8
+C {devices/vsource.sym} 440 -180 0 0 {name=V1 value=1.5
 }
 C {devices/gnd.sym} 440 -120 0 0 {name=l4 lab=GND}
 C {devices/vdd.sym} 440 -250 0 0 {name=l2 lab=VDD}
-C {devices/vsource.sym} 520 -180 0 0 {name=V3 value=1.8
+C {devices/vsource.sym} 520 -180 0 0 {name=V3 value=1.5
 }
 C {devices/gnd.sym} 520 -120 0 0 {name=l33 lab=GND}
 C {devices/lab_pin.sym} 520 -250 1 0 {name=p61 sig_type=std_logic lab=di_pon}
@@ -409,7 +409,7 @@ C {devices/lab_wire.sym} 420 -570 0 0 {name=l9 sig_type=std_logic lab=vcmi}
 C {devices/lab_wire.sym} 490 -610 0 0 {name=l20 sig_type=std_logic lab=vip}
 C {devices/lab_wire.sym} 490 -530 0 0 {name=l21 sig_type=std_logic lab=vin
 }
-C {devices/vsource.sym} 590 -180 0 0 {name=V2 value=0.9
+C {devices/vsource.sym} 590 -180 0 0 {name=V2 value=0.75
 }
 C {devices/gnd.sym} 590 -120 0 0 {name=l24 lab=GND}
 C {devices/lab_wire.sym} 590 -250 1 0 {name=l31 sig_type=std_logic lab=vcmi}
@@ -421,13 +421,14 @@ format="tcleval( @value )"
 value="
 .include [file rootname [file tail [xschem get schname]]].save
 "}
-C {code.sym} 50 -960 0 0 {
-name=TT_MODELS1
-only_toplevel=true
-format="tcleval( @value )"
+C {simulator_commands_shown.sym} 50 -1190 0 0 {
+name=Libs_Ngspice
+simulator=ngspice
+only_toplevel=false
 value="
-** opencircuitdesign pdks install
-.lib $::SKYWATER_MODELS/sky130.lib.spice tt
+.lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerRES.lib res_typ
+.lib cornerDIO.lib dio_tt
 "
-spice_ignore=false
       }

@@ -171,6 +171,7 @@ C {devices/code_shown.sym} -380 -880 0 0 {name=STIMULI
 only_toplevel=false
 value="
 .include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
+.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassivesSizing.spice
 .param VDD = \{\{ VDD \}\}
 .options savecurrents
 .options method=gear reltol=.005 
@@ -203,9 +204,10 @@ let tstep = 0.1*t_rf
 let tstop = 2*t_per
 let tstart = t_delay
 
-*op
+op
 ac dec 100 $&const.f_min $&const.f_max
-*tran $&tstep $&tstop $&tstart
+let acgain=vout
+tran $&tstep $&tstop $&tstart
 
 quit
 .endc"}
@@ -222,69 +224,9 @@ C {devices/vsource.sym} 540 -610 3 0 {name=VIINP value=0
 }
 C {devices/vsource.sym} 540 -530 3 0 {name=VIINN value=0
 }
-C {devices/res.sym} 660 -620 3 0 {name=R1
-value=\{R1\}
-footprint=1206
-device=resistor
-m=1}
 C {devices/lab_pin.sym} 930 -170 2 1 {name=l5 sig_type=std_logic lab=voutn1}
 C {devices/lab_pin.sym} 930 -210 0 0 {name=l6 sig_type=std_logic lab=voutp1
 }
-C {devices/res.sym} 740 -690 0 0 {name=R2
-value=\{R2\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/res.sym} 810 -620 3 0 {name=R3
-value=\{R3\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/capa.sym} 740 -570 0 0 {name=C1
-m=1
-value=\{C1\}
-footprint=1206
-device="ceramic capacitor"}
-C {devices/capa.sym} 1540 -570 0 0 {name=C3
-m=1
-value=\{C3\}
-footprint=1206
-device="ceramic capacitor"}
-C {devices/res.sym} 660 -520 3 0 {name=R11
-value=\{R1\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/res.sym} 740 -450 0 0 {name=R21
-value=\{R2\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/res.sym} 810 -520 3 0 {name=R31
-value=\{R3\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/capa.sym} 880 -450 0 0 {name=C21
-m=1
-value=\{C2\}
-footprint=1206
-device="ceramic capacitor"}
-C {devices/res.sym} 1470 -610 3 0 {name=R4
-value=\{R4\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/res.sym} 1470 -530 3 0 {name=R41
-value=\{R4\}
-footprint=1206
-device=resistor
-m=1}
-C {devices/capa.sym} 880 -690 0 0 {name=C2
-m=1
-value=\{C2\}
-footprint=1206
-device="ceramic capacitor"}
 C {devices/lab_pin.sym} 1330 -680 2 0 {name=l10 sig_type=std_logic lab=voutp1
 }
 C {devices/lab_pin.sym} 1330 -460 0 1 {name=l11 sig_type=std_logic lab=voutn1
@@ -323,3 +265,147 @@ C {devices/gnd.sym} 590 -120 0 0 {name=l24 lab=GND}
 C {devices/lab_wire.sym} 590 -250 1 0 {name=l31 sig_type=std_logic lab=vcmi}
 C {ota_fd_2pole.sym} 970 -670 0 0 {name=xota1 GM=2.53m RO=434.5k CO=0.366p RP=0 CP=0.1p VCMO=0.75 I0=100u}
 C {devices/lab_wire.sym} 970 -570 0 0 {name=l25 sig_type=std_logic lab=vcmi}
+C {sg13cmos5l_pr/rhigh.sym} 740 -690 0 0 {name=R5
+w=\{W_R\}
+l=\{L_R2\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {simulator_commands_shown.sym} 60 -290 0 0 {
+name=Libs_Ngspice
+simulator=ngspice
+only_toplevel=false
+value="
+.lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerRES.lib \{\{ res_corner \}\}
+.lib cornerDIO.lib dio_tt
+.lib cornerCAP.lib cap_typ
+"
+      }
+C {sg13cmos5l_pr/rhigh.sym} 740 -450 0 0 {name=R2
+w=\{W_R\}
+l=\{L_R2\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 660 -620 3 0 {name=R1
+w=\{W_R\}
+l=\{L_R1\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 660 -520 1 0 {name=R6
+w=\{W_R\}
+l=\{L_R1\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 810 -520 1 0 {name=R7
+w=\{W_R\}
+l=\{L_R3\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 810 -620 3 0 {name=R3
+w=\{W_R\}
+l=\{L_R3\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 1470 -610 3 0 {name=R4
+w=\{W_R\}
+l=\{L_R4\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/rhigh.sym} 1470 -530 1 0 {name=R8
+w=\{W_R\}
+l=\{L_R4\}
+model=rhigh
+body=GND
+spiceprefix=X
+b=0
+m=1
+mm_ok=1
+value="expr_eng(  ( 1.6e-4 / @w + 1360.0 * ( (@b + 1)* @l + ( 1.081*@w + 0.18e-6 )*@b ) / ( @w - 0.04e-6 ) ) / @m  )"
+}
+C {sg13cmos5l_pr/cap_cmomf.sym} 740 -570 0 0 {name=C1
+model=cap_cmomf
+w=\{L_C1\}
+l=\{L_C1\}
+mmin=1
+mmax=4
+subblock=0
+m=1
+mm_ok=1
+spiceprefix=X
+}
+C {sg13cmos5l_pr/cap_cmomf.sym} 880 -690 0 0 {name=C2
+model=cap_cmomf
+w=\{L_C2\}
+l=\{L_C2\}
+mmin=1
+mmax=4
+subblock=0
+m=1
+mm_ok=1
+spiceprefix=X
+}
+C {sg13cmos5l_pr/cap_cmomf.sym} 880 -450 0 0 {name=C4
+model=cap_cmomf
+w=\{L_C2\}
+l=\{L_C2\}
+mmin=1
+mmax=4
+subblock=0
+m=1
+mm_ok=1
+spiceprefix=X
+}
+C {sg13cmos5l_pr/cap_cmomf.sym} 1540 -570 0 0 {name=C3
+model=cap_cmomf
+w=\{L_C3\}
+l=\{L_C3\}
+mmin=1
+mmax=4
+subblock=0
+m=1
+mm_ok=1
+spiceprefix=X
+}

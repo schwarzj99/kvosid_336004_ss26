@@ -1,6 +1,12 @@
 parameters:
-  VDD: [1.5]
+  VDD: [1.45, 1.5, 1.55]
+  res_corner: ['res_typ', 'res_bcs', 'res_wcs']
 tests:
   filter_cl_ideal:
     engine: ngspice
-    ac_signals: [v(vout1), v(vout)]
+    ac_signals: [v(vout)]
+    transient_signals: [v(vout), v(vid)]
+    ac1.acgain:
+      min: 1.0
+      typ: 10.0
+      unit: 'V/V'
