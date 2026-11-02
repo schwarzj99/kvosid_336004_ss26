@@ -1,0 +1,243 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_sky130/testbenches/xschem/filter_cl_tb.sch
+**.subckt filter_cl_tb
+VIN vid GND 0 AC 1
+E4 vout1 GND voutp1 voutn1 1
+VIINP vip vipp 0
+VIINN vin vinn 0
+R1 vipp net2 650k
+R2 voutn1 net2 1.3Meg
+R3 net2 vi_ota_p 100k
+C1 net2 net1 10p
+C3 voutp2 voutn2 1p
+R11 vinn net1 650k
+R21 net1 voutp1 1.3Meg
+R31 net1 vi_ota_n 100k
+C21 vi_ota_n voutp1 1p
+R4 voutp1 voutp2 800k
+R41 voutn1 voutn2 800k
+C2 voutn1 vi_ota_p 1p
+E5 vout GND voutp2 voutn2 1
+VIOP vo_ota_n voutn1 0
+VION vo_ota_p voutp1 0
+xamp1 VDD vi_ota_n vi_ota_p vo_ota_p di_pon vo_ota_n GND amp
+V1 VDD GND 1.8
+V3 di_pon GND 1.8
+x2 vid GND vip vcmi vin single2dm gain=1
+V2 vcmi GND 0.9
+**** begin user architecture code
+
+
+.options savecurrents
+.options method=gear reltol=.005
+.options sparse
+.control
+save all
+
+let f_min = 10
+let f_max = 100Meg
+let f_stop = 500k
+
+let Adc = 2
+let err_gain_spec = 0.004
+let v_step_o = 0.9
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+*alter @VIN[SIN] = [ 0 0.01 $&f_sig 0 0 0 ]
+alter @VIN[DC] = 0.0
+
+set wr_singlescale
+set wr_vecnames
+option numdgt=3
+
+set opSimOnly = 0
+
+
+** Main Simulations
+if $opSimOnly eq 0
+	op
+	ac dec 100 $&const.f_min $&const.f_max
+	*set sqrnoise
+	noise v(vout) VIN dec 100 $&const.f_min $&const.f_max 1
+	noise v(vout) VIN dec 10 1 50Meg
+	alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
+	** Check power on by ramping Vdd, tie di_pon to VDD net!
+	*alter @V1[PULSE] = [ 0 1.8 0 10u $&t_rf 0 0 0 ]
+	tran $&tstep $&tstop $&tstart
+
+	setplot ac1
+	let A1 = v(vout1)/v(vid)
+	let A2 = v(vout)/v(vid)
+
+	let Amag_dB = vdb(A2)
+	settype decibel Amag_dB
+	let Aarg = 180/PI*cphase(A2)
+
+	let fdc = const.f_min+1
+	meas ac Adc_ol_dB find Amag_dB when frequency = fdc
+	let Amag_fc = Adc_ol_dB-3
+	meas ac fc find frequency when Amag_dB = Amag_fc
+	meas ac Amin min_at Amag_dB from=const.f_min to=fc
+	meas ac Amax max Amag_dB
+	meas ac Astop find Amag_dB when frequency = const.f_stop
+
+	meas ac fug find frequency when Amag_dB=0
+	let err_gain_act = 1-10^(Adc_ol_dB/20)/Adc
+	let Adc_ol_min = (1+Adc)*(1-err_gain_spec)/err_gain_spec
+	let Adc_ol_min_dB = vdb(Adc_ol_min)
+	print err_gain_act*100
+	print Adc_ol_min_dB
+	plot Amag_dB Aarg ylabel 'Magnitude, Phase'
+
+	setplot noise1
+	let acgain = onoise_spectrum/inoise_spectrum
+	let r1 = sqrt(2)*onoise_r1
+	let r2 = sqrt(2)*onoise_r2
+	let r3 = sqrt(2)*onoise_r3
+	let r4 = sqrt(2)*onoise_r4
+	let diffpair = sqrt(2)*onoise.m.xamp1.xmp4.msky130_fd_pr__pfet_01v8
+	let load_n = sqrt(2)*onoise.m.xamp1.xmn1.msky130_fd_pr__nfet_01v8
+	let load_p = sqrt(2)*onoise.m.xamp1.xmp7.msky130_fd_pr__pfet_01v8
+	let comsource = sqrt(2)*onoise.m.xamp1.xmn3.msky130_fd_pr__nfet_01v8
+	*plot inoise_spectrum ylog xlog
+	plot onoise_spectrum r1 r2 r3 r4 diffpair load_n load_p comsource ylog xlog ylabel 'Output Noise'
+
+	setplot noise4
+	let p_noise_q = (1e-3)^2
+	let p_noise_o = onoise_total^2
+	let p_sig_o = (v_step_o/(2*sqrt(2)))^2
+	let snr = p_sig_o/(p_noise_o+p_noise_q)
+	let snr_dB = 10*log10(snr)
+	print snr_dB
+
+	setplot tran4
+	let vid = v(vid)
+	let iop = viop#branch
+	let ion = vion#branch
+	let vcmo = (voutp1+voutn1)/2
+
+	*plot iop ion
+
+	plot vid vout1 vout vcmo
+	plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
+end
+
+alter @VIN[DC] = 0
+op
+
+remzerovec
+write filter_cl_tb.raw
+.endc
+
+
+.include filter_cl_tb.save
+
+
+** opencircuitdesign pdks install
+.lib /foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice tt
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  amp.sym # of pins=7
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_sky130/schematic/xschem/amp.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_sky130/schematic/xschem/amp.sch
+.subckt amp VDD VI_N VI_P VO_P di_pon VO_N VSS
+*.iopin VSS
+*.iopin VDD
+*.ipin VI_P
+*.ipin di_pon
+*.ipin VI_N
+*.opin VO_P
+*.opin VO_N
+XMP1 vbp vbp VDD VDD sky130_fd_pr__pfet_01v8 L=0.25 W='5 * 2 ' nf=2 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMPSW3 vbp pon VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W='5 * 5 ' nf=5 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMNSW1 pon_b di_pon VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W='3 * 1 ' nf=1 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMPSW1 pon_b di_pon VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W='5 * 1 ' nf=1 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMNSW2 pon pon_b VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W='3 * 3 ' nf=3 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMPSW2 pon pon_b VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W='5 * 3 ' nf=3 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMP2 viref1 vbp VDD VDD sky130_fd_pr__pfet_01v8 L=0.25 W='5 * 20 ' nf=20 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XC5 VDD vbp sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=5 m=5
+XMP4 vo1_n VI_P viref1 viref1 sky130_fd_pr__pfet_01v8 L=0.15 W='5 * 70 ' nf=70 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMP5 vo1_p VI_N viref1 viref1 sky130_fd_pr__pfet_01v8 L=0.15 W='5 * 70 ' nf=70 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMN1 vo1_n vfb1 VSS VSS sky130_fd_pr__nfet_01v8 L=1 W='3 * 6 ' nf=6 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMN2 vo1_p vfb1 VSS VSS sky130_fd_pr__nfet_01v8 L=1 W='3 * 6 ' nf=6 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XC1 vo1_n vfb1 sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=5 m=5
+XC2 vfb1 vo1_p sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=5 m=5
+XMN3 VO_N vo1_p VSS VSS sky130_fd_pr__nfet_01v8 L=0.5 W='3 * 20 ' nf=20 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMN4 VO_P vo1_n VSS VSS sky130_fd_pr__nfet_01v8 L=0.5 W='3 * 20 ' nf=20 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMP3 vbncm vbp VDD VDD sky130_fd_pr__pfet_01v8 L=0.25 W='5 * 2 ' nf=2 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMP6 VO_P vfb2 VDD VDD sky130_fd_pr__pfet_01v8 L=0.5 W='5 * 5 ' nf=5 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMP7 VO_N vfb2 VDD VDD sky130_fd_pr__pfet_01v8 L=0.5 W='5 * 5 ' nf=5 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XC3 VO_N vfb2 sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=5 m=5
+XC4 vfb2 VO_P sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=5 m=5
+XMN5 vbncm vbncm VSS VSS sky130_fd_pr__nfet_01v8 L=0.5 W='3 * 5 ' nf=5 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMN6 vfb2 vbncm VSS VSS sky130_fd_pr__nfet_01v8 L=0.5 W='3 * 4 ' nf=4 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XMNSW3 vrref_sw pon VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W='3 * 5 ' nf=5 ad='int((nf+1)/2) * W / nf * 0.29' as='int((nf+2)/2) * W / nf * 0.29'
++ pd='2*int((nf+1)/2) * (W / nf + 0.29)' ps='2*int((nf+2)/2) * (W / nf + 0.29)' nrd='0.29 / W ' nrs='0.29 / W ' sa=0 sb=0 sd=0 mult=1
+XRREF vrref_sw vbp VSS sky130_fd_pr__res_xhigh_po_0p35 L=5.6 mult=1
+xr1 vfb1 vo1_n vo1_p VSS rstring_cm
+xr2 vfb2 VO_P VO_N VSS rstring_cm
+XC6 vo1_p VO_N sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=16 m=16
+XC7 vo1_n VO_P sky130_fd_pr__cap_mim_m3_1 W=5 L=5 MF=16 m=16
+.ends
+
+
+* expanding   symbol:  rstring_cm.sym # of pins=4
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_sky130/schematic/xschem/rstring_cm.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_sky130/schematic/xschem/rstring_cm.sch
+.subckt rstring_cm VR_M VR_N VR_P VSS
+*.iopin VSS
+*.ipin VR_P
+*.ipin VR_N
+*.opin VR_M
+XR1 VR_P net1 VSS sky130_fd_pr__res_xhigh_po_0p35 L=5.6 mult=1
+XR2 net1 VR_M VSS sky130_fd_pr__res_xhigh_po_0p35 L=5.6 mult=1
+XR3 VR_M net2 VSS sky130_fd_pr__res_xhigh_po_0p35 L=5.6 mult=1
+XR4 net2 VR_N VSS sky130_fd_pr__res_xhigh_po_0p35 L=5.6 mult=1
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

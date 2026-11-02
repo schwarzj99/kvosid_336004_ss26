@@ -1,0 +1,183 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/filter_cl_ideal_tb_param.sch
+**.subckt filter_cl_ideal_tb_param
+VIN vid GND 0 AC 1
+E4 vout1 GND voutp1 voutn1 1
+VIINP vin vinn 0
+VIINN vip vipp 0
+R1 vinn net2 {R1}
+R2 voutp1 net2 {R2}
+R3 net2 vi_ota_n {R3}
+C1 net2 net1 {C1/2}
+C3 voutn2 voutp2 {C3/2}
+R11 vipp net1 {R1}
+R21 net1 voutn1 {R2}
+R31 net1 vi_ota_p {R3}
+C21 vi_ota_p voutn1 {C2}
+R4 voutn1 voutn2 {R4}
+R41 voutp1 voutp2 {R4}
+C2 voutp1 vi_ota_n {C2}
+E5 vout GND voutp2 voutn2 1
+VIOP vo_ota_p voutp1 0
+VION vo_ota_n voutn1 0
+V1 VDD GND 1.5
+x2 vid GND vip vcmi vin single2dm gain=1
+V2 vcmi GND 0.75
+xota1 vi_ota_n vo_ota_p vo_ota_n vi_ota_p vcmi ota_fd_2pole GM=2.532m RO=434.488k CO=0.0366p RP=0 CP=0.01f VCMO=0.75 I0=150u
+**** begin user architecture code
+
+
+.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
+.options savecurrents
+.options method=gear reltol=.005
+.options sparse
+.control
+save all
+
+let f_min = 10
+let f_max = 100Meg
+let f_stop = 9Meg
+let f_nmin = 100
+let f_nmax = 5Meg
+
+let n_bits = 8
+let Adc = 10
+let v_fs = 1.0
+let v_lsb = v_fs/2^n_bits
+let v_qn = v_lsb/sqrt(12)
+let err_gain_spec = v_lsb/v_fs
+let vo_n_max = 113e-6
+
+let v_step_o = v_fs
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+*alter @VIN[SIN] = [ 0 0.01 $&f_sig 0 0 0 ]
+alter @VIN[DC] = 0.0
+
+set wr_singlescale
+set wr_vecnames
+option numdgt=3
+
+set opSimOnly = 0
+
+
+** Main Simulations
+if $opSimOnly eq 0
+	op
+	ac dec 100 $&const.f_min $&const.f_max
+	*set sqrnoise
+	noise v(vout) VIN dec 100 $&const.f_min $&const.f_max 1
+	noise v(vout) VIN dec 10 $&const.f_nmin $&const.f_nmax
+	alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
+	** Check power on by ramping Vdd, tie di_pon to VDD net!
+	*alter @V1[PULSE] = [ 0 1.8 0 10u $&t_rf 0 0 0 ]
+	tran $&tstep $&tstop $&tstart
+
+	setplot ac1
+	let A1 = v(vout1)/v(vid)
+	let A2 = v(vout)/v(vid)
+
+	let Amag_dB = vdb(A2)
+	settype decibel Amag_dB
+	let Aarg = 180/PI*cphase(A2)
+
+	let fdc = const.f_min+1
+	meas ac Adc_ol_dB find Amag_dB when frequency = fdc
+	let Amag_fc = Adc_ol_dB-3
+	meas ac fc find frequency when Amag_dB = Amag_fc
+	meas ac Amin min_at Amag_dB from=const.f_min to=fc
+	meas ac Amax max Amag_dB
+	meas ac Astop find Amag_dB when frequency = const.f_stop
+	let att_db = Adc_ol_dB-Astop
+
+	meas ac fug find frequency when Amag_dB=0
+	let err_gain_act = 1-10^(Adc_ol_dB/20)/Adc
+	let Adc_ol_min = (1+Adc)*(1-err_gain_spec)/err_gain_spec
+	let Adc_ol_min_dB = vdb(Adc_ol_min)
+	print err_gain_act*100
+	print Adc_ol_min_dB
+	print att_db
+	wrdata ../plot_simulations/data/filter_cl_ideal_tb_ac.txt Amag_dB Aarg
+	plot Amag_dB Aarg ylabel 'Magnitude, Phase'
+
+	setplot noise3
+	wrdata ../plot_simulations/data/filter_cl_ideal_tb_noise.txt onoise_spectrum
+
+	setplot noise4
+	let p_noise_q = const.v_qn^2
+	let p_noise_o = onoise_total^2
+	let p_sig_o = (v_step_o/(2*sqrt(2)))^2
+	let snr = p_sig_o/(p_noise_o+p_noise_q)
+	let snr_dB = 10*log10(snr)
+	print snr_dB
+
+	setplot tran4
+	let vid = v(vid)
+	let iop = viop#branch
+	let ion = vion#branch
+	let vcmo = (voutp1+voutn1)/2
+
+	*plot iop ion
+
+	*plot vid vout1 vout vcmo
+	*plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
+end
+
+alter @VIN[DC] = 0
+op
+
+remzerovec
+write filter_cl_ideal_tb.raw
+.endc
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  ota_fd_2pole.sym # of pins=5
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
+.subckt ota_fd_2pole VN IP IN VP VCMI  GM=1u RO=100Meg CO=1p RP=0 CP=0.1p VCMO=0 I0=1u
+*.ipin VP
+*.ipin VN
+*.opin IP
+*.opin IN
+*.ipin VCMI
+R3 IP net1 {RO/2}
+R4 IN net1 {RO/2}
+C3 IP net1 {CO}
+R5 VN ip1 {RP}
+C4 ip1 VCMI {CP}
+C6 in1 VCMI {CP}
+C8 IN net1 {CO}
+R7 VP in1 {RP}
+B2 IP net1 I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B1 net1 IN I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B5 net1 GND I = {VCMO-(V(IP)+V(IN))/2}
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

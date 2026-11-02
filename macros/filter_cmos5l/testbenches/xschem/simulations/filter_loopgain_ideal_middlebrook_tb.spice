@@ -1,0 +1,195 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/filter_loopgain_ideal_middlebrook_tb.sch
+**.subckt filter_loopgain_ideal_middlebrook_tb
+VIN vid GND 0
+E4 vout1 GND voutp1 voutn1 1
+VIINP vip vipp 0
+VIINN vin vinn 0
+E5 vout GND voutp2 voutn2 1
+VIOP vo_opa_p voutp1 0
+VION vo_opa_n voutn1 0
+E6 vr GND vr_p vr_n 1
+Ixn vi_opa_n vinn dc 0 ac 0
+Ixp vipp vi_opa_p dc 0 ac 0
+Vxn vi_opa_n vr_p dc 0 ac 0.5 180
+Vxp vi_opa_p vr_n dc 0 ac 0.5
+V3 VDD GND 1.5
+V4 di_pon GND 1.5
+x2 vid GND vip vcmi vin single2dm gain=1
+V2 vcmi GND 0.75
+R1 net1 net3 {1645*L_R1/W_R}
+R4 net1 net2 {1645*L_R1/W_R}
+R2 voutn1 net3 {1645*L_R2/W_R}
+R7 voutp1 net2 {1645*L_R2/W_R}
+R3 net3 vr_n {1645*L_R3/W_R}
+R8 net2 vr_p {1645*L_R3/W_R}
+R5 voutp1 voutp2 {1645*L_R4/W_R}
+R6 voutn1 voutn2 {1645*L_R4/W_R}
+C3 net3 net2 {1.287p*L_C1*L_C1}
+C1 voutn1 vr_n {1.287p*L_C2*L_C2}
+C2 voutp1 vr_p {1.287p*L_C2*L_C2}
+C4 voutp2 voutn2 {1.287p*L_C3*L_C3}
+x1 vi_opa_n vo_opa_p vo_opa_n vi_opa_p vcmi ota_fd_2pole GM=2.5u RO=440k CO=1.2p RP=0 CP=0.1p VCMO=0 I0=10u
+**** begin user architecture code
+
+
+.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
+.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassivesSizing.spice
+.options savecurrents
+.options method=gear reltol=.01
+.options sparse
+.control
+save all
+
+let f_sig = 100
+let f_min = 10
+let f_max = 100G
+let f_stop = 5Meg
+let tper_sig = 1/f_sig
+let tfr_sig = tper_sig/2
+* R2/R1 = 1.3Meg/650k, so beta = R1/(R1+R2) = 1/3 at dc
+let Adc = 2
+let beta = 1/(1+Adc)
+let v_step_o = 0.9
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+*alter @VIN[SIN] = [ 0 0.01 $&f_sig 0 0 0 ]
+alter @VIN[DC] = 0.0
+
+set wr_singlescale
+set wr_vecnames
+option numdgt=3
+
+
+** Main Simulations
+	* The loop is cut at the amplifier inputs. Vxp and Vxn sit in series between the summing
+	* nodes vr_n, vr_p and the gates, Ixp and Ixn inject into the gates, both differentially.
+	op
+
+	* run 1, voltage injection: the probe sources carry +-0.5 V, the probe currents are off
+	ac dec 100 $&const.f_min $&const.f_max
+	let va1 = v(vi_opa_p) - v(vi_opa_n)
+	let vb1 = v(vr_n) - v(vr_p)
+	let i1 = (i(Vxp) - i(Vxn))/2
+
+	* run 2, current injection: the probe currents carry 1 A differential, the probe sources are off
+	alter @Vxp[acmag] = 0
+	alter @Vxn[acmag] = 0
+	alter @Ixp[acmag] = 1
+	alter @Ixn[acmag] = 1
+	ac dec 100 $&const.f_min $&const.f_max
+	let va2 = v(vi_opa_p) - v(vi_opa_n)
+	let i2 = (i(Vxp) - i(Vxn))/2
+
+	* Middlebrook 1975: the voltage and the current loop gain at the cut, exact when nothing flows back through it
+	let Tv = -ac1.vb1/ac1.va1
+	let Ti = i2/(1 - i2)
+	let L = (Tv*Ti - 1)/(Tv + Ti + 2)
+
+	let A = L/beta
+
+	let L_re = real(L)
+	let L_im = imag(L)
+
+	let L_dB = vdb(L)
+	let L_arg = 180/PI*cphase(L)
+	let A_dB = vdb(A)
+	let A_arg = 180/PI*cphase(A)
+
+	let fdc = const.f_min+1
+
+	meas ac fug find frequency when L_dB=0
+	meas ac pm find L_arg when frequency=fug
+	meas ac L_im_zero find L_im when L_re=0
+
+	let pm = 180-abs(pm)
+
+	print pm
+
+	* gain margin, and how close the Nyquist curve comes to -1 anywhere
+	meas ac L180_dB find L_dB when L_arg=-180
+	let gm = -L180_dB
+	print gm
+	let L_dist = mag(1+L)
+	meas ac dist_min min L_dist
+	print dist_min
+
+	meas ac L0_dB find L_dB when frequency = fdc
+	let err_gain = 1/(1+10^(L0_dB/20))
+
+	print err_gain
+
+	plot L_dB L_arg A_dB A_arg title 'Bode Plot of Loop Gain' ylabel 'Magnitude (dB) / Phase (Deg)'
+	plot L_im vs L_re retraceplot title 'Nyquist Plot of Loop Gain' ylabel 'Imaginary Part' xlabel 'Real Part'
+
+alter @VIN[DC] = 0
+op
+
+remzerovec
+write filter_loopgain_middlebrook_tb.raw
+.endc
+
+
+.include filter_loopgain_ideal_middlebrook_tb.save
+
+
+
+
+.lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerRES.lib res_typ
+.lib cornerDIO.lib dio_tt
+.lib cornerCAP.lib cap_typ
+
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  ota_fd_2pole.sym # of pins=5
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
+.subckt ota_fd_2pole VN IP IN VP VCMI  GM=1u RO=100Meg CO=1p RP=0 CP=0.1p VCMO=0 I0=1u
+*.ipin VP
+*.ipin VN
+*.opin IP
+*.opin IN
+*.ipin VCMI
+R3 IP net1 {RO/2}
+R4 IN net1 {RO/2}
+C3 IP net1 {CO}
+R5 VN ip1 {RP}
+C4 ip1 VCMI {CP}
+C6 in1 VCMI {CP}
+C8 IN net1 {CO}
+R7 VP in1 {RP}
+B2 IP net1 I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B1 net1 IN I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B5 net1 GND I = {VCMO-(V(IP)+V(IN))/2}
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

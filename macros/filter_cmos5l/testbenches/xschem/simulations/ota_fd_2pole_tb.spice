@@ -1,0 +1,132 @@
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/ota_fd_2pole_tb.sch
+**.subckt ota_fd_2pole_tb
+V2 vcmi GND 0.9
+VIN vid GND 0 AC 1
+VIINP vip vipp 0
+VIINN vin vinn 0
+E5 vout GND voutp1 voutn1 1
+VIOP net2 voutn1 0
+VION net1 voutp1 0
+xota1 vipp net2 net1 vinn vcmi ota_fd_2pole GM=4m RO=2Meg CO=1p RP=0 CP=0.1p VCMO=0.9 I0=100u
+x1 vid GND vip vcmi vin single2dm gain=1
+**** begin user architecture code
+
+
+.options savecurrents
+.options method=gear reltol=.005
+.options sparse
+.control
+save all
+
+let f_sig = 100
+let f_min = 10
+let f_max = 1000Meg
+let f_stop = 5Meg
+let tper_sig = 1/f_sig
+let tfr_sig = tper_sig/2
+let Adc = 4000
+let v_step_o = 0.9
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
+
+set wr_singlescale
+set wr_vecnames
+option numdgt=3
+
+
+** Main Simulations
+	op
+	ac dec 100 $&const.f_min $&const.f_max
+	tran $&tstep $&tstop $&tstart
+
+	setplot ac1
+	let A = v(vout)/v(vid)
+
+	let Amag_dB = vdb(A)
+	settype decibel Amag_dB
+	let Aarg = 180/PI*cphase(A)
+
+	let fdc = const.f_min+1
+	meas ac Adc find Amag_dB when frequency = fdc
+	let Amag_fc = Adc-3
+	meas ac fc find frequency when Amag_dB = Amag_fc
+	meas ac Amax max Amag_dB
+	meas ac fug find frequency when Amag_dB=0
+
+	let Adc_lin = 10^(Adc/20)
+	let GBW = Adc_lin*fc
+	print Adc_lin
+	print GBW
+
+	plot Amag_dB Aarg ylabel 'Magnitude, Phase'
+
+	setplot tran1
+	let vid = v(vid)
+	let iop = viop#branch
+	let ion = vion#branch
+	let vcmo = (voutp1+voutn1)/2
+
+	*plot iop ion
+	plot vid vout vcmo
+	plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
+
+
+alter @VIN[DC] = 0
+op
+
+remzerovec
+write ota_fd_2pole_tb.raw
+.endc
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  ota_fd_2pole.sym # of pins=5
+** sym_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
+.subckt ota_fd_2pole VN IP IN VP VCMI  GM=1u RO=100Meg CO=1p RP=0 CP=0.1p VCMO=0 I0=1u
+*.ipin VP
+*.ipin VN
+*.opin IP
+*.opin IN
+*.ipin VCMI
+R3 IP net1 {RO/2}
+R4 IN net1 {RO/2}
+C3 IP net1 {CO}
+R5 VN ip1 {RP}
+C4 ip1 VCMI {CP}
+C6 in1 VCMI {CP}
+C8 IN net1 {CO}
+R7 VP in1 {RP}
+B2 IP net1 I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B1 net1 IN I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B5 net1 GND I = {VCMO-(V(IP)+V(IN))/2}
+.ends
+
+.GLOBAL GND
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

@@ -1,0 +1,7 @@
+.param R1=10.4022k
+.param R2=104.0221k
+.param R3=19.4807k
+.param C1=25p
+.param C2=500f
+.param R4=159.1549k
+.param C3=1p

@@ -1,0 +1,78 @@
+// sch_path: /foss/designs/kvosid_336004_ss26/macros/lna_inv/testbenches/xschem/lna_inv_tb_hb.sch
+//subckt lna_inv_tb_hb ( )
+vin1 ( vsrc n_src ) vsource type="sine" sinedc=0 ampl=2m freq=F0 dc=0 mag=1 
+vin2 ( n_src GND ) vsource type="sine" sinedc=0 ampl=0 freq=F1 dc=0 mag=0 
+rs ( vsrc vin ) resistor r=50 $mfactor=1 
+x1 ( vin vout VDD GND ) lna_inv 
+rl ( vout n_op ) resistor r=200 $mfactor=1 
+vop ( n_op GND ) vsource dc=0 mag=0 
+vsup ( VDD GND ) vsource dc=VSUP 
+//// begin user architecture code
+
+
+parameters F0=2.44G F1=2.441G
+parameters VSUP=1.2 RFMODE=0
+
+include "sg13cmos5l_vacask_common.lib"
+include "cornerMOSlv.lib" section=mos_tt
+include "cornerRES.lib" section=res_typ
+include "cornerCAP.lib" section=cap_typ
+include "lna_inv_sizes.inc"
+
+// netlist parameters are not visible inside control, so the analyses carry literals
+control
+  options temp=27
+  options rawfile="binary"
+  save full
+
+  // bias and supply current
+  analysis op1 op
+
+  // single tone, input power -50 to 0 dBm in 5 dB steps: gain compression
+  sweep pin instance="vin1" parameter="ampl" values=[2m, 3.557m, 6.325m, 11.25m, 20m, 35.57m, 63.25m, 112.5m, 200m, 355.7m, 632.5m]
+    analysis hb1 hb freq=[2.44G] nharm=7
+
+  // two tones 1 MHz apart at -40 and -30 dBm per tone: IM3 at 2*F0-F1
+  alter instance("vin1") ampl=6.325m
+  alter instance("vin2") ampl=6.325m
+  analysis hb2 hb freq=[2.44G, 2.441G] truncate="box" nharm=[3, 3]
+  alter instance("vin1") ampl=20m
+  alter instance("vin2") ampl=20m
+  analysis hb3 hb freq=[2.44G, 2.441G] truncate="box" nharm=[3, 3]
+
+endc
+
+
+//// end user architecture code
+//ends
+
+// expanding   symbol:  lna_inv.sym # of pins=4
+// sym_path: /foss/designs/kvosid_336004_ss26/macros/lna_inv/schematic/xschem/lna_inv.sym
+// sch_path: /foss/designs/kvosid_336004_ss26/macros/lna_inv/schematic/xschem/lna_inv.sch
+subckt lna_inv ( vin vout VDD VSS )
+//.ipin vin
+//.iopin vout
+//.iopin VDD
+//.iopin VSS
+Cpad ( vin VSS ) capacitor c=CPAD $mfactor=1 
+Lsh ( vin n_sh ) inductor l=LSH $mfactor=1 
+Rlsh ( n_sh VSS ) resistor r=RLSH $mfactor=1 
+Cblk ( vin vg ) capacitor c=CBLK $mfactor=1 
+XMN ( vd vg VSS VSS ) sg13_lv_nmos w=WN l=LNCH ng=NGN m=1 rfmode=RFMODE mm_ok=1 
+XMP ( vd vg VDD VDD ) sg13_lv_pmos w=WP l=LPCH ng=NGP m=1 rfmode=RFMODE mm_ok=1 
+Rf ( vd vg ) resistor r=RF $mfactor=1 
+Cc ( vd vout ) capacitor c=CC $mfactor=1 
+Cd ( vd VSS ) capacitor c=CD $mfactor=1 
+ends 
+
+ground GND 
+global VDD 
+//// begin user architecture code
+model vsource vsource
+load "resistor.osdi"
+model resistor resistor
+load "capacitor.osdi"
+model capacitor capacitor
+load "inductor.osdi"
+model inductor inductor
+//// end user architecture code

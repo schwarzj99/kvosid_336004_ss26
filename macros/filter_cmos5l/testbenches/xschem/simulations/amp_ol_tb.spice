@@ -1,0 +1,191 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/amp_ol_tb.sch
+**.subckt amp_ol_tb
+V3 VDD GND 1.8
+VIN vid GND 0 AC 1
+VIINP vip vi_p 0
+VIINN vin vi_n 0
+V4 di_pon GND 1.8
+E7 vout GND voutp voutn 1
+CL2 voutp GND 1p
+xamp1 VDD vi_n vi_p voutp di_pon voutn GND amp
+CL1 voutn GND 1p
+x1 vid GND vip vcmi vin single2dm gain=1
+V2 vcmi GND 0.9
+**** begin user architecture code
+
+
+.options savecurrents
+
+.save all
+.control
+set doAmpSim = 1
+
+if $doAmpSim eq 1
+	setplot const
+	let f_min = 10
+	let f_max = 1G
+	let f_stop = 500k
+
+	let Adc = 220
+	let v_step_o = 0.9
+	let v_step_i = -v_step_o/Adc
+
+	let t_rf = 0.01u
+	let t_step = 5u
+	let t_delay = 0
+	let t_per = 2*t_step
+
+	let tstep = 0.001*t_step
+	let tstop = 2*t_per
+	let tstart = t_delay
+
+	alter @VIN[DC] = 0.0
+	alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
+
+	ac dec 100 $&const.f_min $&const.f_max
+
+	noise v(vout) vin dec 100 $&const.f_min $&const.f_max
+
+	tran $&tstep $&tstop $&tstart
+
+	setplot ac1
+	let Atot = v(vout)/v(vid)
+
+	let Amag_ol_dB = vdb(Atot)
+	let Aarg_ol = 180/PI*cphase(Atot)
+
+	**let Amag_ol_dB_1 = vdb(A1)
+	**let Aarg_ol_1 = 180/PI*cphase(A1)
+
+	**let Amag_ol_dB_2 = vdb(A2)
+	**let Aarg_ol_2 = 180/PI*cphase(A2)
+
+	meas ac Adc_ol_dB max Amag_ol_dB
+	let Amag_fc = Adc_ol_dB-3
+
+	meas ac fc find frequency when Amag_ol_dB = Amag_fc
+	meas ac fug_ol find frequency when Amag_ol_dB=0
+	meas ac pm find Aarg_ol when frequency=fug_ol
+	let pm = 180 + pm
+	print pm
+
+	let Adc_ol_lin = 10^(Adc_ol_dB/20)
+	let err_gain = 1-Adc_ol_lin/(1+Adc_ol_lin)
+	print err_gain*100
+
+	plot Amag_ol_dB Aarg_ol ylabel 'Open Loop Magnitude, Phase'
+
+	setplot noise1
+	let acgain = onoise_spectrum/inoise_spectrum
+	plot onoise_spectrum ylog xlog ylabel 'Output Noise'
+	*plot acgain
+
+	setplot noise2
+	print onoise_total
+
+	setplot tran2
+	let vcmo = (v(voutp)+v(voutn))/2
+	plot v(vin_p) v(vin_n) v(voutp) v(voutn) vcmo
+end
+
+reset
+op
+
+
+*rm /foss/designs/filter/dc.txt
+*show >> /foss/designs/filter/dc.txt
+remzerovec
+write amp_ol_tb.raw
+.endc
+
+?
+
+.include amp_ol_tb.save
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  amp.sym # of pins=7
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/amp.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/amp.sch
+.subckt amp VDD VI_N VI_P VO_P di_pon VO_N VSS
+*.iopin VSS
+*.iopin VDD
+*.ipin VI_P
+*.ipin di_pon
+*.ipin VI_N
+*.opin VO_P
+*.opin VO_N
+*  MP1 -  pfet_01v8_nf  IS MISSING !!!!
+*  MPSW3 -  pfet_01v8_nf  IS MISSING !!!!
+*  MNSW1 -  nfet_01v8_nf  IS MISSING !!!!
+*  MPSW1 -  pfet_01v8_nf  IS MISSING !!!!
+*  MNSW2 -  nfet_01v8_nf  IS MISSING !!!!
+*  MPSW2 -  pfet_01v8_nf  IS MISSING !!!!
+*  MP2 -  pfet_01v8_nf  IS MISSING !!!!
+*  C5 -  cap_mim_m3_1  IS MISSING !!!!
+*  MP4 -  pfet_01v8_nf  IS MISSING !!!!
+*  MP5 -  pfet_01v8_nf  IS MISSING !!!!
+*  MN1 -  nfet_01v8_nf  IS MISSING !!!!
+*  MN2 -  nfet_01v8_nf  IS MISSING !!!!
+*  C1 -  cap_mim_m3_1  IS MISSING !!!!
+*  C2 -  cap_mim_m3_1  IS MISSING !!!!
+*  MN3 -  nfet_01v8_nf  IS MISSING !!!!
+*  MN4 -  nfet_01v8_nf  IS MISSING !!!!
+*  MP3 -  pfet_01v8_nf  IS MISSING !!!!
+*  MP6 -  pfet_01v8_nf  IS MISSING !!!!
+*  MP7 -  pfet_01v8_nf  IS MISSING !!!!
+*  C3 -  cap_mim_m3_1  IS MISSING !!!!
+*  C4 -  cap_mim_m3_1  IS MISSING !!!!
+*  MN5 -  nfet_01v8_nf  IS MISSING !!!!
+*  MN6 -  nfet_01v8_nf  IS MISSING !!!!
+*  MNSW3 -  nfet_01v8_nf  IS MISSING !!!!
+*  RREF -  res_xhigh_po_0p35  IS MISSING !!!!
+xr1 vfb1 vo1_n vo1_p VSS rstring_cm
+xr2 vfb2 VO_P VO_N VSS rstring_cm
+*  C6 -  cap_mim_m3_1  IS MISSING !!!!
+*  C7 -  cap_mim_m3_1  IS MISSING !!!!
+*  annot1 -  annotate_fet_params  IS MISSING !!!!
+*  annot2 -  annotate_fet_params  IS MISSING !!!!
+*  annot3 -  annotate_fet_params  IS MISSING !!!!
+*  annot4 -  annotate_fet_params  IS MISSING !!!!
+*  annot5 -  annotate_fet_params  IS MISSING !!!!
+*  annot6 -  annotate_fet_params  IS MISSING !!!!
+*  annot7 -  annotate_fet_params  IS MISSING !!!!
+*  annot8 -  annotate_fet_params  IS MISSING !!!!
+*  annot9 -  annotate_fet_params  IS MISSING !!!!
+.ends
+
+
+* expanding   symbol:  rstring_cm.sym # of pins=4
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/rstring_cm.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/rstring_cm.sch
+.subckt rstring_cm VR_M VR_N VR_P VSS
+*.iopin VSS
+*.ipin VR_P
+*.ipin VR_N
+*.opin VR_M
+*  R1 -  res_xhigh_po_0p35  IS MISSING !!!!
+*  R2 -  res_xhigh_po_0p35  IS MISSING !!!!
+*  R3 -  res_xhigh_po_0p35  IS MISSING !!!!
+*  R4 -  res_xhigh_po_0p35  IS MISSING !!!!
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

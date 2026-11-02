@@ -25,18 +25,6 @@ N 1030 -220 1030 -200 {
 lab=vout}
 N 1030 -140 1030 -110 {
 lab=GND}
-N 990 -610 990 -590 {
-lab=GND}
-N 990 -360 990 -340 {
-lab=GND}
-N 990 -500 1030 -500 {
-lab=#net1}
-N 990 -460 1030 -460 {
-lab=#net2}
-N 990 -460 990 -420 {
-lab=#net2}
-N 990 -530 990 -500 {
-lab=#net1}
 N 1090 -500 1190 -500 {
 lab=voutn1}
 N 1090 -460 1190 -460 {
@@ -45,9 +33,9 @@ N 950 -150 990 -150 {
 lab=voutn1}
 N 950 -190 990 -190 {
 lab=voutp1}
-N 960 -460 990 -460 {
+N 960 -460 1030 -460 {
 lab=#net2}
-N 960 -500 990 -500 {
+N 960 -500 1030 -500 {
 lab=#net1}
 N 390 -410 390 -320 {lab=GND}
 N 510 -530 510 -520 {lab=vip}
@@ -168,18 +156,6 @@ C {devices/vsource.sym} 1060 -500 3 0 {name=VIOP value=0
 }
 C {devices/vsource.sym} 1060 -460 3 1 {name=VION value=0
 }
-C {devices/capa.sym} 990 -390 0 0 {name=C4
-m=1
-value=5p
-footprint=1206
-device="ceramic capacitor"}
-C {devices/capa.sym} 990 -560 0 0 {name=C6
-m=1
-value=5p
-footprint=1206
-device="ceramic capacitor"}
-C {devices/gnd.sym} 990 -340 0 0 {name=l26 lab=GND}
-C {devices/gnd.sym} 990 -610 2 0 {name=l27 lab=GND}
 C {devices/lab_pin.sym} 950 -150 2 1 {name=l2 sig_type=std_logic lab=voutn1
 }
 C {devices/lab_pin.sym} 950 -190 0 0 {name=l4 sig_type=std_logic lab=voutp1

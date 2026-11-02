@@ -1,0 +1,8 @@
+.param W_R=0.5e-6
+.param L_R1=3e-6
+.param L_R2=31.5e-6
+.param L_R3=6e-6
+.param L_R4=48.5e-6
+.param L_C1=139.5e-6
+.param L_C2=19.5e-6
+.param L_C3=28e-6

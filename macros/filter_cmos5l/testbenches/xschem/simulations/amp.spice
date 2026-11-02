@@ -1,0 +1,55 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/amp.sch
+**.subckt amp VDD VI_N VI_P VO_P di_pon VO_N VSS
+*.iopin VSS
+*.iopin VDD
+*.ipin VI_P
+*.ipin di_pon
+*.ipin VI_N
+*.opin VO_P
+*.opin VO_N
+xr1 vfb1 vo1_n vo1_p VSS rstring_cm
+xr2 vfb2 VO_P VO_N VSS rstring_cm
+XM1 pon_b di_pon VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM2 pon pon_b VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM3 pon_b di_pon VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM4 pon pon_b VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM5 vbp pon VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM6 vbp vbp VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM7 viref1 vbp VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM8 VO_N vfb2 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM9 VO_P vfb2 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM10 vbncm vbp VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM11 vrref_sw pon VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM12 vo1_n vfb1 VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM13 vo1_p vfb1 VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM14 VO_N vo1_p VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM15 VO_P vo1_n VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM16 vfb2 vbncm VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM17 vbncm vbncm VSS VSS sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM18 vo1_n VI_P viref1 viref1 sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XM19 vo1_p VI_N viref1 viref1 sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1 mm_ok=1
+XR1 vbp vrref_sw VSS rhigh w=0.5e-6 l=0.96e-6 m=1 b=0 mm_ok=1
+XC1 vfb1 vo1_n cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC2 vo1_p vfb1 cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC3 vbp VDD cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC4 VO_N vfb2 cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC5 vfb2 VO_P cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC6 vo1_p VO_N cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+XC7 VO_P vo1_n cap_cmomf w=5e-6 l=5e-6 mmin=1 mmax=4 subblock=0 m=1 mm_ok=1
+**.ends
+
+* expanding   symbol:  rstring_cm.sym # of pins=4
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/rstring_cm.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/rstring_cm.sch
+.subckt rstring_cm VR_M VR_N VR_P VSS
+*.iopin VSS
+*.ipin VR_P
+*.ipin VR_N
+*.opin VR_M
+XR1 VR_P net1 VSS rhigh w=0.5e-6 l=0.96e-6 m=1 b=0 mm_ok=1
+XR2 net1 VR_M VSS rhigh w=0.5e-6 l=0.96e-6 m=1 b=0 mm_ok=1
+XR3 VR_M net2 VSS rhigh w=0.5e-6 l=0.96e-6 m=1 b=0 mm_ok=1
+XR4 net2 VR_N VSS rhigh w=0.5e-6 l=0.96e-6 m=1 b=0 mm_ok=1
+.ends
+
+.end

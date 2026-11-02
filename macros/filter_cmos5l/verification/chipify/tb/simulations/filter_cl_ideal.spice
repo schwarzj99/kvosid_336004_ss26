@@ -1,0 +1,120 @@
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/filter_cl_ideal.sch
+**.subckt filter_cl_ideal
+VIN vid GND 0 AC 1
+E4 vout1 GND voutp1 voutn1 1
+VIINP vin vinn 0
+VIINN vip vipp 0
+R1 vinn net2 {R1}
+R3 net2 vi_ota_n {R3}
+C1 net2 net1 {C1}
+C3 voutn2 voutp2 {C3}
+R11 vipp net1 {R1}
+R31 net1 vi_ota_p {R3}
+C21 vi_ota_p voutn1 {C2}
+R4 voutn1 voutn2 {R4}
+R41 voutp1 voutp2 {R4}
+C2 voutp1 vi_ota_n {C2}
+E5 vout GND voutp2 voutn2 1
+VIOP vo_ota_p voutp1 0
+VION vo_ota_n voutn1 0
+VDD VDD GND {VDD}
+x2 vid GND vip vcmi vin single2dm gain=1
+V2 vcmi GND 0.75
+xota1 vi_ota_n vo_ota_p vo_ota_n vi_ota_p vcmi ota_fd_2pole GM=2.53m RO=434.5k CO=0.366p RP=0 CP=0.1p VCMO=0.75 I0=100u
+XR5 voutp1 net2 GND rhigh w=0.5e-6 l=65e-6 m=1 b=0 mm_ok=1
+XR2 net1 voutn1 GND rhigh w=0.5e-6 l=65e-6 m=1 b=0 mm_ok=1
+**** begin user architecture code
+
+
+.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
+.param VDD = 1.5
+.options savecurrents
+.options method=gear reltol=.005
+.options sparse
+.control
+
+let f_min = 10
+let f_max = 100Meg
+let f_stop = 9Meg
+let f_nmin = 100
+let f_nmax = 5Meg
+
+let n_bits = 8
+let Adc = 10
+let v_fs = 1.0
+let v_lsb = v_fs/2^n_bits
+let v_qn = v_lsb/sqrt(12)
+let err_gain_spec = v_lsb/v_fs
+let vo_n_max = 113e-6
+
+let v_step_o = v_fs
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+*op
+ac dec 100 $&const.f_min $&const.f_max
+*tran $&tstep $&tstop $&tstart
+
+*quit
+.endc
+
+
+
+
+.lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerRES.lib res_typ
+.lib cornerDIO.lib dio_tt
+
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  ota_fd_2pole.sym # of pins=5
+** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
+** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
+.subckt ota_fd_2pole VN IP IN VP VCMI  GM=1u RO=100Meg CO=1p RP=0 CP=0.1p VCMO=0 I0=1u
+*.ipin VP
+*.ipin VN
+*.opin IP
+*.opin IN
+*.ipin VCMI
+R3 IP net1 {RO/2}
+R4 IN net1 {RO/2}
+C3 IP net1 {CO}
+R5 VN ip1 {RP}
+C4 ip1 VCMI {CP}
+C6 in1 VCMI {CP}
+C8 IN net1 {CO}
+R7 VP in1 {RP}
+B2 IP net1 I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B1 net1 IN I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B5 net1 GND I = {VCMO-(V(IP)+V(IN))/2}
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

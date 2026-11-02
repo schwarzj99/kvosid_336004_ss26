@@ -1,12 +1,5 @@
-*.vcd
-*.raw
+# general files to ommit
 *.pyc
-*.ext
-*.spice
-*.save
-*.spectre
-.vacaskrc.toml
-macros/amp_cs/verification/chipify/out/*
-
+*.ipynb_checkpoints
 # editor settings
 .vscode/
