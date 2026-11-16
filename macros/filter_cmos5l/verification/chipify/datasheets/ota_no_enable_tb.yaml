@@ -1,0 +1,21 @@
+parameters:
+  temp: [-40, 27, 50, 80, 130]
+  seed: range(10)
+  mos_corner: ['tt']
+  res_corner: ['typ']
+  VDD: [1.5]
+tests:
+  ota_no_enable_tb:
+    engine: ngspice
+    transient_signals: [v(vid), v(vcmo)]
+    ac_signals: [A]
+    ac1.Adc:
+      min: 50.0
+      max: 60.0
+      typ: 51.0
+      unit: 'V/V'
+    ac1.fug:
+      typ: 10000000.0
+      unit: 'Hz'
+    ac1.GBW:
+      unit: 'HzV/V'

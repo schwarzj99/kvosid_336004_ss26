@@ -170,8 +170,8 @@ C {devices/gnd.sym} 80 -410 0 0 {name=l1 lab=GND}
 C {devices/code_shown.sym} -380 -880 0 0 {name=STIMULI
 only_toplevel=false
 value="
-.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
-.include /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/scripts/sizing/filterPassivesSizing.spice
+.include /foss/designs/kvosid/macros/filter_cmos5l/scripts/sizing/filterPassives.spice
+.include /foss/designs/kvosid/macros/filter_cmos5l/scripts/sizing/filterPassivesSizing.spice
 .param VDD = \{\{ VDD \}\}
 .options savecurrents
 .options method=gear reltol=.005 

@@ -1,0 +1,14 @@
+2026-11-16 20:03:36 [INFO    ] chipify: ============================================================
+2026-11-16 20:03:36 [INFO    ] chipify: Chipify logging initialised  →  /foss/designs/kvosid/macros/filter_cmos5l/out/chipify.log
+2026-11-16 20:03:36 [INFO    ] chipify: ============================================================
+2026-11-16 20:03:36 [INFO    ] chipify.gui_qt: Wayland session detected; preferring XWayland (xcb) with a native-Wayland fallback.
+2026-11-16 20:03:37 [INFO    ] chipify.gui_qt: Starting Chipify Qt GUI (theme=night, PySide6).
+2026-11-16 20:03:37 [INFO    ] chipify.gui_qt.main_window: Initial window size 1300x950 (screen work area 2560x1440).
+2026-11-16 20:03:37 [DEBUG   ] chipify.gui_qt.main_window: MainWindow constructed (theme=night).
+2026-11-16 20:04:55 [INFO    ] chipify: ============================================================
+2026-11-16 20:04:55 [INFO    ] chipify: Chipify logging initialised  →  /foss/designs/kvosid/macros/filter_cmos5l/out/chipify.log
+2026-11-16 20:04:55 [INFO    ] chipify: ============================================================
+2026-11-16 20:04:55 [INFO    ] chipify.gui_qt: Wayland session detected; preferring XWayland (xcb) with a native-Wayland fallback.
+2026-11-16 20:04:56 [INFO    ] chipify.gui_qt: Starting Chipify Qt GUI (theme=night, PySide6).
+2026-11-16 20:04:56 [INFO    ] chipify.gui_qt.main_window: Initial window size 1300x950 (screen work area 2560x1440).
+2026-11-16 20:04:56 [DEBUG   ] chipify.gui_qt.main_window: MainWindow constructed (theme=night).

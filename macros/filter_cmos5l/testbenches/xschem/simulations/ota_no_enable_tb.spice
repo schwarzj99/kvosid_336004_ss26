@@ -10,10 +10,16 @@ VION net2 voutp1 0
 x1 vid GND vip vcmi vin single2dm gain=1
 xamp1 VDD vinn vipp net2 net1 GND amp_no_enable
 VDD VDD GND 1.5
+R1 GND voutn1 560k
+C1 GND voutn1 5p
+R2 GND voutp1 560k
+C2 GND voutp1 5p
 **** begin user architecture code
 
-
-.include ota_no_enable_tb.save
+.include /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/simulations/ota_no_enable_tb.save
+.param VDD = {{ VDD }}
+.temp = {{ temp }}
+.options seed = {{ seed }}
 .options savecurrents
 .options method=gear reltol=.005
 .options sparse
@@ -41,62 +47,43 @@ let tstart = t_delay
 
 alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
 
-set wr_singlescale
-set wr_vecnames
-option numdgt=3
-
-
 ** Main Simulations
-	op
-	ac dec 100 $&const.f_min $&const.f_max
-	tran $&tstep $&tstop $&tstart
-
-	setplot ac1
-	let A = v(vout)/v(vid)
-
-	let Amag_dB = vdb(A)
-	settype decibel Amag_dB
-	let Aarg = 180/PI*cphase(A)
-
-	let fdc = const.f_min+1
-	meas ac Adc find Amag_dB when frequency = fdc
-	let Amag_fc = Adc-3
-	meas ac fc find frequency when Amag_dB = Amag_fc
-	meas ac Amax max Amag_dB
-	meas ac fug find frequency when Amag_dB=0
-
-	let Adc_lin = 10^(Adc/20)
-	let GBW = Adc_lin*fc
-	print Adc_lin
-	print GBW
-
-	plot Amag_dB Aarg ylabel 'Magnitude, Phase'
-
-	setplot tran1
-	let vid = v(vid)
-	let iop = viop#branch
-	let ion = vion#branch
-	let vcmo = (voutp1+voutn1)/2
-
-	*plot iop ion
-	plot vid vout vcmo
-	plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
-
-
-alter @VIN[DC] = 0
 op
+ac dec 100 $&const.f_min $&const.f_max
+tran $&tstep $&tstop $&tstart
+
+setplot ac1
+let A = v(vout)/v(vid)
+
+let Amag_dB = vdb(A)
+settype decibel Amag_dB
+let Aarg = 180/PI*cphase(A)
+
+let fdc = const.f_min+1
+meas ac Adc find Amag_dB when frequency = fdc
+let Amag_fc = Adc-3
+meas ac fc find frequency when Amag_dB = Amag_fc
+meas ac Amax max Amag_dB
+meas ac fug find frequency when Amag_dB=0
+
+let Adc_lin = 10^(Adc/20)
+let GBW = Adc_lin*fc
+
+setplot tran1
+let vid = v(vid)
+let iop = viop#branch
+let ion = vion#branch
+let vcmo = (voutp1+voutn1)/2
 
 remzerovec
-write ota_no_enable_tb.raw
+quit
 .endc
 
 
 
 
-.lib cornerMOSlv.lib mos_tt
-.lib cornerMOShv.lib mos_tt
-.lib cornerRES.lib res_typ
-.lib cornerDIO.lib dio_tt
+.lib cornerMOSlv.lib mos_{{ mos_corner }}
+.lib cornerRES.lib res_{{ res_corner }}
 
 
 **** end user architecture code
@@ -114,14 +101,14 @@ write ota_no_enable_tb.raw
 *.opin VO_N
 xr1 vfb1 vo1_n vo1_p VSS rstring_cm
 xr2 vfb2 VO_P VO_N VSS rstring_cm
-XM6 vbp vbp VDD VDD sg13_lv_pmos w=1u l=0.5u ng=1 m=1 mm_ok=1
-XM7 viref1 vbp VDD VDD sg13_lv_pmos w=10u l=0.5u ng=10 m=1 mm_ok=1
-XM8 VO_N vfb2 VDD VDD sg13_lv_pmos w=9.5u l=1u ng=1 m=1 mm_ok=1
-XM9 VO_P vfb2 VDD VDD sg13_lv_pmos w=9.5u l=1u ng=1 m=1 mm_ok=1
-XM12 vo1_n vfb1 VSS VSS sg13_lv_nmos w=79u l=0.5u ng=8 m=1 mm_ok=1
-XM13 vo1_p vfb1 VSS VSS sg13_lv_nmos w=79u l=0.5u ng=8 m=1 mm_ok=1
-XM14 VO_N vo1_p VSS VSS sg13_lv_nmos w=316u l=0.5u ng=32 m=1 mm_ok=1
-XM15 VO_P vo1_n VSS VSS sg13_lv_nmos w=316u l=0.5u ng=32 m=1 mm_ok=1
+XM6 vbp vbp VDD VDD sg13_lv_pmos w=0.5u l=0.75u ng=1 m=1 mm_ok=1
+XM7 viref1 vbp VDD VDD sg13_lv_pmos w=5u l=0.75u ng=10 m=1 mm_ok=1
+XM8 VO_N vfb2 VDD VDD sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XM9 VO_P vfb2 VDD VDD sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XM12 vo1_n vfb1 VSS VSS sg13_lv_nmos w=2.5u l=0.5u ng=5 m=1 mm_ok=1
+XM13 vo1_p vfb1 VSS VSS sg13_lv_nmos w=2.5u l=0.5u ng=5 m=1 mm_ok=1
+XM14 VO_N vo1_p VSS VSS sg13_lv_nmos w=10u l=0.5u ng=20 m=1 mm_ok=1
+XM15 VO_P vo1_n VSS VSS sg13_lv_nmos w=10u l=0.5u ng=20 m=1 mm_ok=1
 XM18 vo1_n VI_P viref1 viref1 sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
 XM19 vo1_p VI_N viref1 viref1 sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
 XR1 vbp VSS VSS rhigh w=0.5e-6 l=243e-6 m=1 b=0 mm_ok=1

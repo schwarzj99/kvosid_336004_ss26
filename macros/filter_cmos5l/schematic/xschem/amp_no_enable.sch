@@ -315,7 +315,7 @@ lab=vbp}
 N 1680 -740 1680 -670 {
 lab=vfb2}
 C {devices/lab_pin.sym} 850 -700 0 0 {name=p5 sig_type=std_logic lab=vbp}
-C {devices/title.sym} 200 -60 0 0 {name=l3 author="Michael Koefinger"}
+C {devices/title.sym} 200 -60 0 0 {name=l3 author="Julian Schwarz"}
 C {devices/lab_pin.sym} 1020 -500 2 1 {name=l1 sig_type=std_logic lab=vo1_n
 }
 C {devices/lab_pin.sym} 1290 -500 0 1 {name=l9 sig_type=std_logic lab=vo1_p
@@ -332,8 +332,8 @@ C {devices/lab_pin.sym} 1680 -780 0 0 {name=p7 sig_type=std_logic lab=vfb2}
 C {rstring_cm.sym} 1280 -410 2 0 {name=xr1}
 C {rstring_cm.sym} 1560 -650 0 0 {name=xr2}
 C {sg13cmos5l_pr/sg13_lv_pmos.sym} 870 -790 0 1 {name=M6
-l=0.5u
-w=1u
+l=0.75u
+w=0.5u
 ng=1
 m=1
 mm_ok=1
@@ -341,8 +341,8 @@ model=sg13_lv_pmos
 spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1140 -790 0 0 {name=M7
-l=0.5u
-w=10u
+l=0.75u
+w=5u
 ng=10
 m=1
 mm_ok=1
@@ -350,7 +350,7 @@ model=sg13_lv_pmos
 spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1580 -750 0 1 {name=M8
-l=1u
+l=0.5u
 w=9.5u
 ng=1
 m=1
@@ -359,7 +359,7 @@ model=sg13_lv_pmos
 spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_pmos.sym} 1780 -750 0 0 {name=M9
-l=1u
+l=0.5u
 w=9.5u
 ng=1
 m=1
@@ -369,8 +369,8 @@ spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1090 -290 0 1 {name=M12
 l=0.5u
-w=79u
-ng=8
+w=2.5u
+ng=5
 m=1
 mm_ok=1
 model=sg13_lv_nmos
@@ -378,8 +378,8 @@ spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1230 -290 0 0 {name=M13
 l=0.5u
-w=79u
-ng=8
+w=2.5u
+ng=5
 m=1
 mm_ok=1
 model=sg13_lv_nmos
@@ -387,8 +387,8 @@ spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1540 -450 0 0 {name=M14
 l=0.5u
-w=316u
-ng=32
+w=10u
+ng=20
 m=1
 mm_ok=1
 model=sg13_lv_nmos
@@ -396,8 +396,8 @@ spiceprefix=X
 }
 C {sg13cmos5l_pr/sg13_lv_nmos.sym} 1780 -450 0 0 {name=M15
 l=0.5u
-w=316u
-ng=32
+w=10u
+ng=20
 m=1
 mm_ok=1
 model=sg13_lv_nmos

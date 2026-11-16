@@ -36,10 +36,28 @@ N 1200 -220 1200 -200 {lab=VDD}
 N 1200 -140 1200 -110 {lab=GND}
 N 880 -370 880 -320 {lab=GND}
 N 880 -600 880 -580 {lab=VDD}
-N 1100 -520 1130 -520 {lab=voutn1}
-N 1100 -440 1130 -440 {lab=voutp1}
+N 1100 -520 1140 -520 {lab=voutn1}
+N 1140 -440 1150 -440 {lab=voutp1}
 N 1010 -520 1040 -520 {lab=#net1}
 N 1010 -440 1040 -440 {lab=#net2}
+N 1140 -640 1140 -630 {lab=GND}
+N 1140 -640 1210 -640 {lab=GND}
+N 1140 -660 1140 -640 {lab=GND}
+N 1210 -640 1210 -630 {lab=GND}
+N 1210 -570 1210 -560 {lab=voutn1}
+N 1140 -560 1210 -560 {lab=voutn1}
+N 1140 -570 1140 -560 {lab=voutn1}
+N 1140 -560 1140 -520 {lab=voutn1}
+N 1140 -520 1150 -520 {lab=voutn1}
+N 1140 -330 1140 -320 {lab=GND}
+N 1140 -320 1210 -320 {lab=GND}
+N 1140 -320 1140 -300 {lab=GND}
+N 1210 -330 1210 -320 {lab=GND}
+N 1210 -400 1210 -390 {lab=voutp1}
+N 1140 -400 1210 -400 {lab=voutp1}
+N 1140 -400 1140 -390 {lab=voutp1}
+N 1140 -440 1140 -400 {lab=voutp1}
+N 1100 -440 1140 -440 {lab=voutp1}
 C {devices/vsource.sym} 1120 -170 0 0 {name=V2 value=0.75
 }
 C {devices/vsource.sym} 290 -420 0 0 {name=VIN value="0 AC 1"
@@ -54,8 +72,10 @@ C {devices/lab_wire.sym} 290 -490 1 0 {name=l1 sig_type=std_logic lab=vid}
 C {devices/gnd.sym} 290 -320 0 0 {name=l1 lab=GND}
 C {devices/code.sym} 40 -310 0 0 {name=STIMULI
 only_toplevel=false
-value="
-.include ota_no_enable_tb.save
+value=".include /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/simulations/ota_no_enable_tb.save
+.param VDD = \{\{ VDD \}\}
+.temp = \{\{ temp \}\}
+.options seed = \{\{ seed \}\}
 .options savecurrents
 .options method=gear reltol=.005 
 .options sparse
@@ -83,66 +103,49 @@ let tstart = t_delay
 
 alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
 
-set wr_singlescale
-set wr_vecnames
-option numdgt=3
-
-
 ** Main Simulations
-	op
-	ac dec 100 $&const.f_min $&const.f_max
-	tran $&tstep $&tstop $&tstart
-		
-	setplot ac1
-	let A = v(vout)/v(vid)
-
-	let Amag_dB = vdb(A)
-	settype decibel Amag_dB
-	let Aarg = 180/PI*cphase(A)
-
-	let fdc = const.f_min+1
-	meas ac Adc find Amag_dB when frequency = fdc
-	let Amag_fc = Adc-3
-	meas ac fc find frequency when Amag_dB = Amag_fc
-	meas ac Amax max Amag_dB
-	meas ac fug find frequency when Amag_dB=0
-	
-	let Adc_lin = 10^(Adc/20)
-	let GBW = Adc_lin*fc
-	print Adc_lin
-	print GBW
-
-	plot Amag_dB Aarg ylabel 'Magnitude, Phase'
-
-	setplot tran1
-	let vid = v(vid)
-	let iop = viop#branch
-	let ion = vion#branch
-	let vcmo = (voutp1+voutn1)/2
-
-	*plot iop ion
-	plot vid vout vcmo
-	plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
-
-
-alter @VIN[DC] = 0
 op
+ac dec 100 $&const.f_min $&const.f_max
+tran $&tstep $&tstop $&tstart
+	
+setplot ac1
+let A = v(vout)/v(vid)
+
+let Amag_dB = vdb(A)
+settype decibel Amag_dB
+let Aarg = 180/PI*cphase(A)
+
+let fdc = const.f_min+1
+meas ac Adc find Amag_dB when frequency = fdc
+let Amag_fc = Adc-3
+meas ac fc find frequency when Amag_dB = Amag_fc
+meas ac Amax max Amag_dB
+meas ac fug find frequency when Amag_dB=0
+	
+let Adc_lin = 10^(Adc/20)
+let GBW = Adc_lin*fc
+
+setplot tran1
+let vid = v(vid)
+let iop = viop#branch
+let ion = vion#branch
+let vcmo = (voutp1+voutn1)/2
 
 remzerovec
-write ota_no_enable_tb.raw
+quit
 .endc"}
 C {devices/gnd.sym} 1120 -110 0 0 {name=l14 lab=GND}
 C {devices/gnd.sym} 390 -320 0 0 {name=l15 lab=GND}
-C {devices/title.sym} 160 -40 0 0 {name=l22 author="Michael Koefinger"}
+C {devices/title.sym} 160 -40 0 0 {name=l22 author="Julian Schwarz"}
 C {devices/lab_wire.sym} 710 -520 0 0 {name=p3 sig_type=std_logic lab=vipp}
 C {devices/lab_wire.sym} 710 -440 0 0 {name=p4 sig_type=std_logic lab=vinn}
 C {devices/vsource.sym} 630 -520 3 0 {name=VIINP value=0
 }
 C {devices/vsource.sym} 630 -440 3 1 {name=VIINN value=0
 }
-C {devices/lab_pin.sym} 1130 -440 2 0 {name=l10 sig_type=std_logic lab=voutp1
+C {devices/lab_pin.sym} 1150 -440 2 0 {name=l10 sig_type=std_logic lab=voutp1
 }
-C {devices/lab_pin.sym} 1130 -520 0 1 {name=l11 sig_type=std_logic lab=voutn1
+C {devices/lab_pin.sym} 1150 -520 0 1 {name=l11 sig_type=std_logic lab=voutn1
 }
 C {devices/lab_pin.sym} 1030 -220 3 1 {name=l12 sig_type=std_logic lab=vout}
 C {devices/vcvs.sym} 1030 -170 0 0 {name=E5 value=1}
@@ -170,10 +173,8 @@ name=Libs_Ngspice
 simulator=ngspice
 only_toplevel=false
 value="
-.lib cornerMOSlv.lib mos_tt
-.lib cornerMOShv.lib mos_tt
-.lib cornerRES.lib res_typ
-.lib cornerDIO.lib dio_tt
+.lib cornerMOSlv.lib mos_\{\{ mos_corner \}\}
+.lib cornerRES.lib res_\{\{ res_corner \}\}
 "
       }
 C {launcher.sym} 130 -155 0 0 {name=h3
@@ -200,3 +201,25 @@ write_data [save_params] $netlist_dir/[file rootname [file tail [xschem get curr
 xschem save; xschem netlist
 simulate
 "}
+C {res.sym} 1140 -600 0 0 {name=R1
+value=560k
+footprint=1206
+device=resistor
+m=1}
+C {capa.sym} 1210 -600 0 0 {name=C1
+m=1
+value=5p
+footprint=1206
+device="ceramic capacitor"}
+C {devices/gnd.sym} 1140 -660 2 0 {name=l16 lab=GND}
+C {res.sym} 1140 -360 2 1 {name=R2
+value=560k
+footprint=1206
+device=resistor
+m=1}
+C {capa.sym} 1210 -360 2 1 {name=C2
+m=1
+value=5p
+footprint=1206
+device="ceramic capacitor"}
+C {devices/gnd.sym} 1140 -300 0 1 {name=l17 lab=GND}
