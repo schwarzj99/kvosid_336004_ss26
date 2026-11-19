@@ -1,4 +1,4 @@
-** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/testbenches/xschem/filter_cl_ideal_tb.sch
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/filter_cl_ideal_tb.sch
 **.subckt filter_cl_ideal_tb
 VIN vid GND 0 AC 1
 E4 vout1 GND voutp1 voutn1 1
@@ -160,25 +160,25 @@ write filter_cl_ideal_tb.raw
 **.ends
 
 * expanding   symbol:  ota_fd_2pole.sym # of pins=5
-** sym_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
-** sch_path: /foss/designs/kvosid_336004_ss26/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
+** sym_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sym
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/ota_fd_2pole.sch
 .subckt ota_fd_2pole VN IP IN VP VCMI  GM=1u RO=100Meg CO=1p RP=0 CP=0.1p VCMO=0 I0=1u
 *.ipin VP
 *.ipin VN
 *.opin IP
 *.opin IN
 *.ipin VCMI
-R3 IP net1 {{RO}/2}
-R4 IN net1 {{RO}/2}
-C3 IP net1 {{CO}}
+R3 IP net1 {RO/2}
+R4 IN net1 {RO/2}
+C3 IP net1 {CO}
 R5 VN ip1 {RP}
 C4 ip1 VCMI {CP}
 C6 in1 VCMI {CP}
-C8 IN net1 {{CO}}
+C8 IN net1 {CO}
 R7 VP in1 {RP}
-B2 IP net1 I = {{I0}*tanh({GM}/2*V(ip1,in1)/{I0})}
-B1 net1 IN I = {{I0}*tanh({GM}/2*V(ip1,in1)/{I0})}
-B5 net1 GND I = {{VCMO}-(V(IP)+V(IN))/2}
+B2 IP net1 I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B1 net1 IN I = {I0*tanh(GM/2*V(ip1,in1)/I0)}
+B5 net1 GND I = {VCMO-(V(IP)+V(IN))/2}
 .ends
 
 .GLOBAL GND

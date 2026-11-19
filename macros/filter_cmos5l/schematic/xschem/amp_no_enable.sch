@@ -114,9 +114,9 @@ lab=VSS}
 N 1560 -160 1800 -160 {
 lab=VSS}
 N 1560 -450 1580 -450 {
-lab=VSS}
+lab=#net1}
 N 1800 -450 1820 -450 {
-lab=VSS}
+lab=#net2}
 N 1250 -450 1250 -350 {
 lab=vo1_p}
 N 1250 -350 1250 -320 {
@@ -171,20 +171,20 @@ N 1560 -520 1560 -480 {
 lab=VO_N}
 N 1800 -520 1800 -480 {
 lab=VO_P}
-N 1560 -400 1560 -160 {
+N 1560 -180 1560 -160 {
 lab=VSS}
-N 1800 -400 1800 -160 {
+N 1800 -180 1800 -160 {
 lab=VSS}
 N 1430 -450 1520 -450 {
 lab=vo1_p}
 N 1800 -400 1820 -400 {
-lab=VSS}
+lab=#net2}
 N 1820 -450 1820 -400 {
-lab=VSS}
+lab=#net2}
 N 1560 -400 1580 -400 {
-lab=VSS}
+lab=#net1}
 N 1580 -450 1580 -400 {
-lab=VSS}
+lab=#net1}
 N 1670 -750 1680 -740 {
 lab=vfb2}
 N 1680 -780 1680 -760 {
@@ -234,11 +234,11 @@ lab=vfb2}
 N 1680 -670 1690 -660 {
 lab=vfb2}
 N 1640 -540 1680 -540 {
-lab=VSS}
+lab=#net1}
 N 1640 -540 1640 -400 {
-lab=VSS}
+lab=#net1}
 N 1580 -400 1640 -400 {
-lab=VSS}
+lab=#net1}
 N 1560 -590 1600 -590 {
 lab=VO_N}
 N 1760 -590 1800 -590 {
@@ -282,9 +282,9 @@ lab=VSS}
 N 1250 -470 1250 -450 {
 lab=vo1_p}
 N 1800 -420 1800 -400 {
-lab=VSS}
+lab=#net2}
 N 1560 -420 1560 -400 {
-lab=VSS}
+lab=#net1}
 N 1600 -750 1670 -750 {
 lab=vfb2}
 N 1670 -750 1690 -750 {
@@ -314,6 +314,10 @@ N 850 -760 850 -740 {
 lab=vbp}
 N 1680 -740 1680 -670 {
 lab=vfb2}
+N 1560 -400 1560 -240 {
+lab=#net1}
+N 1800 -400 1800 -240 {
+lab=#net2}
 C {devices/lab_pin.sym} 850 -700 0 0 {name=p5 sig_type=std_logic lab=vbp}
 C {devices/title.sym} 200 -60 0 0 {name=l3 author="Julian Schwarz"}
 C {devices/lab_pin.sym} 1020 -500 2 1 {name=l1 sig_type=std_logic lab=vo1_n
@@ -475,3 +479,13 @@ m=1
 value=250f
 footprint=1206
 device="ceramic capacitor"}
+C {res.sym} 1560 -210 0 0 {name=R2
+value=2.8k
+footprint=1206
+device=resistor
+m=1}
+C {res.sym} 1800 -210 0 0 {name=R3
+value=2.8k
+footprint=1206
+device=resistor
+m=1}

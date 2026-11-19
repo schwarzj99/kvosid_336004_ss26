@@ -1,0 +1,173 @@
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/ota_no_enable_xschem_tb.sch
+**.subckt ota_no_enable_xschem_tb
+V2 vcmi GND 0.75
+VIN vid GND 0 AC 1
+VIINP vip vipp 0
+VIINN vin vinn 0
+E5 vout GND voutp1 voutn1 1
+VIOP net1 voutn1 0
+VION net2 voutp1 0
+x1 vid GND vip vcmi vin single2dm gain=1
+xamp1 VDD vinn vipp net2 net1 GND amp_no_enable
+VDD VDD GND 1.5
+R1 GND voutn1 560k
+C1 GND voutn1 5p
+R2 GND voutp1 560k
+C2 GND voutp1 5p
+**** begin user architecture code
+
+.include /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/simulations/ota_no_enable_xschem_tb.save
+.param VDD = 1.5
+.options savecurrents
+.options method=gear reltol=.005
+.options sparse
+.control
+save all
+
+let f_sig = 100
+let f_min = 10
+let f_max = 1000Meg
+let f_stop = 5Meg
+let tper_sig = 1/f_sig
+let tfr_sig = tper_sig/2
+let Adc = 4000
+let v_step_o = 0.75
+let v_step_i = v_step_o/Adc
+
+let t_rf = 0.1u
+let t_step = 50u
+let t_delay = 0
+let t_per = 2*t_step
+
+let tstep = 0.1*t_rf
+let tstop = 2*t_per
+let tstart = t_delay
+
+alter @VIN[PULSE] = [ 0 $&v_step_i $&t_delay $&t_rf $&t_rf $&t_step $&t_per 0 ]
+
+*{% if false %}
+set wr_singlescale
+set wr_vecnames
+option numdgt=3
+*{% endif %}
+
+
+** Main Simulations
+op
+ac dec 100 $&const.f_min $&const.f_max
+tran $&tstep $&tstop $&tstart
+
+setplot ac1
+let A = v(vout)/v(vid)
+
+let Amag_dB = vdb(A)
+settype decibel Amag_dB
+let Aarg = 180/PI*cphase(A)
+
+let fdc = const.f_min+1
+meas ac Adc find Amag_dB when frequency = fdc
+let Amag_fc = Adc-3
+meas ac fc find frequency when Amag_dB = Amag_fc
+meas ac Amax max Amag_dB
+meas ac fug find frequency when Amag_dB=0
+
+let Adc_lin = 10^(Adc/20)
+let GBW = Adc_lin*fc
+print Adc_lin
+print GBW
+
+plot Amag_dB Aarg ylabel 'Magnitude, Phase'
+
+setplot tran1
+let vid = v(vid)
+let iop = viop#branch
+let ion = vion#branch
+let vcmo = (voutp1+voutn1)/2
+
+*plot iop ion
+plot vid vout vcmo
+plot v(vip) v(vin) v(voutp1) v(voutn1) vcmo
+
+
+alter @VIN[DC] = 0
+op
+
+remzerovec
+write ota_no_enable_xschem_tb.raw
+*quit
+.endc
+
+
+
+
+.lib cornerMOSlv.lib mos_tt
+.lib cornerRES.lib res_typ
+
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  amp_no_enable.sym # of pins=6
+** sym_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/amp_no_enable.sym
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/amp_no_enable.sch
+.subckt amp_no_enable VDD VI_N VI_P VO_P VO_N VSS
+*.iopin VSS
+*.iopin VDD
+*.ipin VI_P
+*.ipin VI_N
+*.opin VO_P
+*.opin VO_N
+xr1 vfb1 vo1_n vo1_p VSS rstring_cm
+xr2 vfb2 VO_P VO_N net1 rstring_cm
+XM6 vbp vbp VDD VDD sg13_lv_pmos w=0.5u l=0.75u ng=1 m=1 mm_ok=1
+XM7 viref1 vbp VDD VDD sg13_lv_pmos w=5u l=0.75u ng=10 m=1 mm_ok=1
+XM8 VO_N vfb2 VDD VDD sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XM9 VO_P vfb2 VDD VDD sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XM12 vo1_n vfb1 VSS VSS sg13_lv_nmos w=2.5u l=0.5u ng=5 m=1 mm_ok=1
+XM13 vo1_p vfb1 VSS VSS sg13_lv_nmos w=2.5u l=0.5u ng=5 m=1 mm_ok=1
+XM14 VO_N vo1_p net1 net1 sg13_lv_nmos w=10u l=0.5u ng=20 m=1 mm_ok=1
+XM15 VO_P vo1_n net2 net2 sg13_lv_nmos w=10u l=0.5u ng=20 m=1 mm_ok=1
+XM18 vo1_n VI_P viref1 viref1 sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XM19 vo1_p VI_N viref1 viref1 sg13_lv_pmos w=9.5u l=0.5u ng=1 m=1 mm_ok=1
+XR1 vbp VSS VSS rhigh w=0.5e-6 l=243e-6 m=1 b=0 mm_ok=1
+C6 VO_N vo1_p 1.221p
+C1 vfb1 vo1_n 250f
+C7 VO_P vo1_n 1.221p
+C3 VDD vbp 1p
+C2 vo1_p vfb1 250f
+C4 vfb2 VO_N 250f
+C5 VO_P vfb2 250f
+R2 net1 VSS 2.8k
+R3 net2 VSS 2.8k
+.ends
+
+
+* expanding   symbol:  rstring_cm.sym # of pins=4
+** sym_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/rstring_cm.sym
+** sch_path: /foss/designs/kvosid/macros/filter_cmos5l/schematic/xschem/rstring_cm.sch
+.subckt rstring_cm VR_M VR_N VR_P VSS
+*.iopin VSS
+*.ipin VR_P
+*.ipin VR_N
+*.opin VR_M
+R1 VR_P VR_M 1Meg
+R4 VR_M VR_N 1Meg
+.ends
+
+.GLOBAL GND
+**** begin user architecture code
+
+* from device_model attribute
+.subckt single2dm vin VSS vp vcm vn gain=1
+*.ipin vin
+*.opin vn
+*.iopin vcm
+*.opin vp
+*.iopin VSS
+E3 vcm vn net1 VSS 'gain / 2'
+E2 vp vcm net1 VSS 'gain / 2'
+E1 net1 VSS vin VSS 'gain'
+.ends
+
+**** end user architecture code
+.end

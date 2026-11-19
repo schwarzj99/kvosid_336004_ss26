@@ -72,8 +72,8 @@ C {devices/lab_wire.sym} 290 -490 1 0 {name=l1 sig_type=std_logic lab=vid}
 C {devices/gnd.sym} 290 -320 0 0 {name=l1 lab=GND}
 C {devices/code.sym} 40 -310 0 0 {name=STIMULI
 only_toplevel=false
-value=".include /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/simulations/ota_no_enable_tb.save
-.param VDD = \{\{ VDD \}\}
+value=".include /foss/designs/kvosid/macros/filter_cmos5l/testbenches/xschem/simulations/@schname\\\\.save
+.param VDD = 1.5
 .options savecurrents
 .options method=gear reltol=.005 
 .options sparse
@@ -149,8 +149,8 @@ alter @VIN[DC] = 0
 op
 
 remzerovec
-write ota_no_enable_tb.raw
-quit
+write @schname\\\\.raw
+*quit
 .endc"}
 C {devices/gnd.sym} 1120 -110 0 0 {name=l14 lab=GND}
 C {devices/gnd.sym} 390 -320 0 0 {name=l15 lab=GND}
@@ -191,8 +191,8 @@ name=Libs_Ngspice
 simulator=ngspice
 only_toplevel=false
 value="
-.lib cornerMOSlv.lib mos_\{\{ mos_corner \}\}
-.lib cornerRES.lib res_\{\{ res_corner \}\}
+.lib cornerMOSlv.lib mos_tt
+.lib cornerRES.lib res_typ
 "
       }
 C {launcher.sym} 130 -155 0 0 {name=h3
